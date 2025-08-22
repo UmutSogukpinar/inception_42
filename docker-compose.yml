@@ -1,0 +1,20 @@
+services:
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    env_file: 
+      - .env
+    ports:
+     - "8080:80"
+     - "8443:443"
+    volumes:
+      - certs:/etc/nginx/ssl
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -skf https://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  certs:
