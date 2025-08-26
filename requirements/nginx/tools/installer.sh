@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# 1) Sertifikalar yoksa oluştur (SAN içersin — modern tarayıcılar ister)
+# Generate SSL certificate if it does not exist
 if [ ! -f /etc/nginx/ssl/server.crt ] || [ ! -f /etc/nginx/ssl/server.key ]; then
   openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
     -subj "/CN=localhost" \
@@ -11,11 +11,11 @@ if [ ! -f /etc/nginx/ssl/server.crt ] || [ ! -f /etc/nginx/ssl/server.key ]; the
   chmod 600 /etc/nginx/ssl/server.key
 fi
 
-# 2) Nginx runtime dizini
+# Create runtime directory for Nginx
 mkdir -p /run/nginx
 
-# 3) Konfig testi
+# Check configuration syntax
 nginx -t
 
-# 4) CMD’yi (nginx -g 'daemon off;') PID 1 olarak başlat
+# Start Nginx in foreground
 exec "$@"
