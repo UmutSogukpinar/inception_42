@@ -1,12 +1,12 @@
 services:
   nginx:
+    image: nginx            # image name == service name (kural)
     build: ./requirements/nginx
     container_name: nginx
-    env_file: 
+    env_file:
       - .env
     ports:
-     - "8080:80"
-     - "8443:443"
+      - "8443:443"          # only HTTPS exposed on host: 8443
     volumes:
       - certs:/etc/nginx/ssl
     restart: unless-stopped
