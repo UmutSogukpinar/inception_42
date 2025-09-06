@@ -3,13 +3,13 @@ NAME=inception
 all: up
 
 up:
-	docker compose -f ./docker-compose.yml up -d --build
+	docker compose -f ./srcs/docker-compose.yml up -d --build
 
 down:
-	docker compose -f ./docker-compose.yml down
+	docker compose -f ./srcs/docker-compose.yml down
 
 clean:
-	docker compose -f ./docker-compose.yml down -v
+	docker compose -f ./srcs/docker-compose.yml down -v
 
 fclean: clean
 	docker system prune -af --volumes
