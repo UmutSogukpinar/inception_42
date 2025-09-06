@@ -9,17 +9,17 @@ RUN apt-get update &&                   \
 
 # Copy custom NGINX configuration and installer script into the container
 COPY ./conf/nginx.conf /etc/nginx/sites-enabled/default
-COPY ./tools/installer.sh /var/www/installer.sh
 
+COPY ./tools/installer.sh /var/www/nginxInstaller.sh
 
 # Make the installer script executable
-RUN chmod +x /var/www/installer.sh
+RUN chmod +x /var/www/nginxInstaller.sh
 
 # Expose HTTPS port
 EXPOSE 443
 
 # Run the installer script as entrypoint
-ENTRYPOINT ["/var/www/installer.sh"]
+ENTRYPOINT ["/var/www/nginxInstaller.sh"]
 
 # Start NGINX in the foreground
 CMD ["nginx", "-g", "daemon off;"]
