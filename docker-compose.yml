@@ -1,20 +1,13 @@
+version: '3.9'
+
 services:
   nginx:
-    image: nginx            # image name == service name (kural)
     build: ./requirements/nginx
     container_name: nginx
-    env_file:
-      - .env
     ports:
-      - "8443:443"          # only HTTPS exposed on host: 8443
+      - "443:443"
     volumes:
-      - certs:/etc/nginx/ssl
+      - ./requirements/nginx/conf:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/ssl
+      - ./tools:/var/www/html
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -skf https://localhost/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  certs:

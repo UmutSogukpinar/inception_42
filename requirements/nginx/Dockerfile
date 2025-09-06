@@ -1,25 +1,25 @@
-# Base image: Debian penultimate stable
+# Base image
 FROM debian:bullseye
 
-# Install only required packages
-RUN apt-get update && apt-get install -y \
-    nginx openssl curl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+# Install NGINX and OpenSSL
+# then create necessary directories
+RUN apt-get update &&                   \ 
+    apt-get install -y nginx openssl && \
+    mkdir -p /etc/nginx/ssl /run/nginx
 
-# Create required directories
-RUN mkdir -p /etc/nginx/ssl /run/nginx /var/www/html
+# Copy custom NGINX configuration and installer script into the container
+COPY ./conf/nginx.conf /etc/nginx/sites-enabled/default
+COPY ./tools/installer.sh /var/www/installer.sh
 
-# Copy configuration and entrypoint
-COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY ./tools/installer.sh /usr/local/bin/installer.sh
-RUN chmod +x /usr/local/bin/installer.sh
 
-# Simple index page (for quick test, can be removed later)
-RUN echo "<h1>NGINX over TLS</h1>" > /var/www/html/index.html
+# Make the installer script executable
+RUN chmod +x /var/www/installer.sh
 
-# Expose only HTTPS port (443)
+# Expose HTTPS port
 EXPOSE 443
 
-# Run entrypoint (generates certs if missing, tests config, then exec CMD)
-ENTRYPOINT ["/usr/local/bin/installer.sh"]
+# Run the installer script as entrypoint
+ENTRYPOINT ["/var/www/installer.sh"]
+
+# Start NGINX in the foreground
 CMD ["nginx", "-g", "daemon off;"]

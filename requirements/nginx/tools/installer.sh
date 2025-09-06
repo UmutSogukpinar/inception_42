@@ -1,22 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
-set -e
+if [ -f "/root/certs/nginx-selfsigned.key" ] && [ -f "/root/certs/nginx-selfsigned.crt" ]; then
+    echo "Certificate is already created."
+else
+    echo "Generating a certificate..."
 
-# Generate SSL certificate if it does not exist
-if [ ! -f /etc/nginx/ssl/server.crt ] || [ ! -f /etc/nginx/ssl/server.key ]; then
-    openssl req -x509 -nodes -newkey rsa:2048 -days 365         \
-        -subj "/CN=localhost"                                   \
-        -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"     \
-        -keyout /etc/nginx/ssl/server.key                       \
-        -out /etc/nginx/ssl/server.crt
-    chmod 600 /etc/nginx/ssl/server.key
+    if [ -z "$DOMAIN_NAME" ]; then
+        echo "DOMAIN_NAME variable does not exist. Exiting..."
+        exit 1
+    fi
+
+    openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+        -keyout /etc/nginx/ssl/nginx.key                \
+        -out /etc/nginx/ssl/nginx.crt                   \
+        -subj "/C=TR/ST=ISTANBUL/L=SARIYER/O=42ISTANBUL/CN=$DOMAIN_NAME"
+
 fi
 
-# Create runtime directory for Nginx
-mkdir -p /run/nginx
 
-# Check configuration syntax
-nginx -t
-
-# Start Nginx in foreground
 exec "$@"
