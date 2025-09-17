@@ -1,4 +1,9 @@
+version: "3.9"
+
 services:
+
+  # ====================== Nginx ======================
+
   nginx:
     build:
       context: ./requirements/nginx
@@ -14,9 +19,11 @@ services:
         ipv4_address: 172.16.238.10
         ipv6_address: 2001:3984:3989::10
     depends_on:
-      - wordpress
+      - wordpress                     
     restart: always
-    
+
+  # ====================== MariaDB ======================
+
   mariadb:
     build:
       context: ./requirements/mariadb
@@ -27,19 +34,23 @@ services:
       - db_data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: /run/secrets/db_user
-      MYSQL_ROOT_PASSWORD: /run/secrets/db_root_password
-      MYSQL_PASSWORD: /run/secrets/db_password
     secrets:
       - db_root_password
       - db_user
       - db_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       my_network:
         ipv4_address: 172.16.238.9
         ipv6_address: 2001:3984:3989::9
     restart: always
-    
+
+  # ====================== WordPress ========================
+
   wordpress:
     build:
       context: ./requirements/wordpress
@@ -50,30 +61,37 @@ services:
       - wordpress_files:/var/www/html
     environment:
       WORDPRESS_DB_HOST: ${DB_HOST}
-      WORDPRESS_DB_NAME: ${DB_NAME}
-      WORDPRESS_DB_USER: /run/secrets/db_user
-      WORDPRESS_DB_PASSWORD: /run/secrets/db_password
+      WORDPRESS_DB_NAME: ${DB_NAME} 
+      WP_URL: https://${DOMAIN_NAME} 
+      WP_TITLE: ${WP_TITLE}
+      WP_ADMIN: ${WP_ADMIN}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
     secrets:
       - db_user
       - db_password
-      - db_root_password
+      - wp_admin_password
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     networks:
       my_network:
         ipv4_address: 172.16.238.8
         ipv6_address: 2001:3984:3989::8
-    extra_hosts:
-      - "${DOMAIN_NAME}:172.16.238.10"
     restart: always
+
+# ====================== Secrets ======================
 
 secrets:
   db_user:
-    file: ../secrets/credentials.txt
+    file: ../secrets/db_user.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
   db_password:
     file: ../secrets/db_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+
+# ====================== Networks ======================
 
 networks:
   my_network:
@@ -86,6 +104,8 @@ networks:
           gateway: 172.16.238.1
         - subnet: "2001:3984:3989::/64"
           gateway: 2001:3984:3989::1
+
+# ====================== Volumes ======================
 
 volumes:
   db_data:

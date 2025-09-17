@@ -11,9 +11,13 @@ down:
 clean:
 	docker compose -f ./srcs/docker-compose.yml down -v
 
-fclean: clean
+fclean: clean volume-clean
 	docker system prune -af --volumes
+
+volume-clean:
+	sudo rm -rf /home/umut/data/wordpress/*
+	sudo rm -rf /home/umut/data/mariadb/*
 
 re: fclean all
 
-.PHONY : all up down clean fclean re
+.PHONY : all up down clean fclean volume-clean re
