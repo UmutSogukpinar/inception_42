@@ -1,122 +1,67 @@
-version: "3.9"
+# ===========================================
+#             Docker Compose File,
+#           for Inception Project 42
+# ===========================================
 
 services:
 
-  # ====================== Nginx ======================
-
-  nginx:
-    build:
-      context: ./requirements/nginx
-    container_name: nginx
-    ports:
-      - "443:443"
-    volumes:
-      - wordpress_files:/var/www/html
-    environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
-    networks:
-      my_network:
-        ipv4_address: 172.16.238.10
-        ipv6_address: 2001:3984:3989::10
-    depends_on:
-      - wordpress                     
-    restart: always
-
-  # ====================== MariaDB ======================
+  # ===========================================
+  #               MariaDB Service             
+  # ===========================================
 
   mariadb:
-    build:
-      context: ./requirements/mariadb
+    build: ./requirements/mariadb
+    image: mariadb:inception
     container_name: mariadb
+    restart: always
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=wp_user
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
     expose:
       - "3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: ${DB_NAME}
     secrets:
       - db_root_password
-      - db_user
       - db_password
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      my_network:
-        ipv4_address: 172.16.238.9
-        ipv6_address: 2001:3984:3989::9
-    restart: always
 
-  # ====================== WordPress ========================
 
-  wordpress:
-    build:
-      context: ./requirements/wordpress
-    container_name: wordpress
-    expose:
-      - "9000"
-    volumes:
-      - wordpress_files:/var/www/html
-    environment:
-      WORDPRESS_DB_HOST: ${DB_HOST}
-      WORDPRESS_DB_NAME: ${DB_NAME} 
-      WP_URL: https://${DOMAIN_NAME} 
-      WP_TITLE: ${WP_TITLE}
-      WP_ADMIN: ${WP_ADMIN}
-      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
-    secrets:
-      - db_user
-      - db_password
-      - wp_admin_password
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    networks:
-      my_network:
-        ipv4_address: 172.16.238.8
-        ipv6_address: 2001:3984:3989::8
-    restart: always
+# ===========================================
+#                  Volumes             
+# ===========================================
 
-# ====================== Secrets ======================
+volumes:
+  mariadb_data:
+    driver: local
+
+
+# ===========================================
+#                  Networks             
+# ===========================================
+
+networks:
+  inception:
+    driver: bridge
+
+# ===========================================
+#                  Secrets             
+# ===========================================
 
 secrets:
-  db_user:
-    file: ../secrets/db_user.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
   db_password:
     file: ../secrets/db_password.txt
+  wp_admin_user:
+    file: ../secrets/credentials.txt
+    name: wp_admin_user
   wp_admin_password:
-    file: ../secrets/wp_admin_password.txt
-
-# ====================== Networks ======================
-
-networks:
-  my_network:
-    driver: bridge
-    enable_ipv6: true
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.16.238.0/24"
-          gateway: 172.16.238.1
-        - subnet: "2001:3984:3989::/64"
-          gateway: 2001:3984:3989::1
-
-# ====================== Volumes ======================
-
-volumes:
-  db_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/umut/data/mariadb
-  wordpress_files:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/umut/data/wordpress
+    file: ../secrets/credentials.txt
+    name: wp_admin_password
+  wp_admin_email:
+    file: ../secrets/credentials.txt
+    name: wp_admin_email
