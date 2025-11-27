@@ -1,22 +1,24 @@
-# Base image
 FROM debian:bullseye
 
-# Expose HTTPS port
+# Expose port
 EXPOSE 443
 
-# Install NGINX and OpenSSL
-# then create necessary directories
-RUN apt-get update && \
-    apt-get install -y nginx openssl && \
-    mkdir -p /etc/nginx/ssl /run/nginx
+# Install nginx, openssl and curl
+RUN apt-get update && apt-get install -y --fix-missing \
+    nginx \
+    openssl \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
 
-# Copy custom NGINX configuration and installer script into the container
-COPY ./conf/nginx.conf /etc/nginx/sites-enabled/default
+# Copy configuration and entrypoint
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./tools/installer.sh /installer.sh
+RUN chmod +x /installer.sh
 
-COPY ./tools/installer.sh /var/www/nginxInstaller.sh
+# Create necessary directories
+RUN mkdir -p /var/run/nginx /etc/nginx/ssl
 
-# Make the installer script executable
-RUN chmod +x /var/www/nginxInstaller.sh
+# Set entrypoint and default CMD
+ENTRYPOINT ["/installer.sh"]
+CMD ["nginx", "-g", "daemon off;"]
 
-# Start NGINX and run installer at container start, not build time
-CMD ["/bin/sh", "-c", "/var/www/nginxInstaller.sh && exec nginx -g 'daemon off;'"]

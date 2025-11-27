@@ -1,45 +1,50 @@
 FROM debian:bullseye
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y	\
-        bash 								\
-        curl 								\
-        wget 								\
-        php 								\
-        php-cli 							\
-        php-cgi 							\
-        php-fpm 							\
-        php-mysql 							\
-        php-pdo 							\
-        php-gd 								\
-        php-mbstring 						\
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
+    bash \
+    curl \
+    wget \
+    ca-certificates \
+    mariadb-client \
+    php7.4 \
+    php7.4-cli \
+    php7.4-cgi \
+    php7.4-fpm \
+    php7.4-mysql \
+    php7.4-gd \
+    php7.4-mbstring \
+    php7.4-pdo \
+    php7.4-xml \
+    php7.4-curl \
+ && rm -rf /var/lib/apt/lists/*
 
-# Install wordpress-client
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar &&	\
-    chmod +x wp-cli.phar && 																\
-    mv wp-cli.phar /usr/local/bin/wp
+# Install WordPress CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
-# Ensure runtime folder exists
-RUN mkdir -p /run/php
-
-# Copy custom PHP-FPM config
-COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
-
-# Copy WordPress setup script
-COPY ./tools/installer.sh /usr/local/bin/wordpressInstaller.sh
-
-# Make the script executable
-RUN chmod +x /usr/local/bin/wordpressInstaller.sh
-
-# Set the entrypoint to the WordPress setup script
-ENTRYPOINT ["/usr/local/bin/wordpressInstaller.sh"]
 
 # Set working directory
-WORKDIR /var/www/html/
+WORKDIR /var/www/html
 
-# Expose port 9000 and start PHP-FPM server
+# Download WordPress core
+RUN wget https://wordpress.org/latest.tar.gz && \
+    tar -xzf latest.tar.gz && rm latest.tar.gz && \
+    mv wordpress/* . && rm -rf wordpress
+
+# Copy PHP-FPM configuration
+COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+
+# Create symlink for php-fpm
+RUN ln -s /usr/sbin/php-fpm7.4 /usr/sbin/php-fpm
+
+# Copy and prepare installer script
+COPY ./tools/installer.sh /usr/local/bin/wordpressInstaller.sh
+
+RUN chmod +x /usr/local/bin/wordpressInstaller.sh
+
+# Expose port
 EXPOSE 9000
 
-# Keep the container running by starting PHP-FPM in the foreground
-CMD ["/usr/sbin/php-fpm7.4", "-F"]
+# Set entrypoint (installer will run php-fpm)
+ENTRYPOINT ["/usr/local/bin/wordpressInstaller.sh"]

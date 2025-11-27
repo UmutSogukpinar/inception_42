@@ -1,79 +1,105 @@
 #!/bin/sh
 set -e
 
-# ======================= Secrets and Credentials ==========================
+# ================== Load Environment Variables ==================
 
-# Read the database user password from Docker secrets
-MYSQL_PASSWORD=$(cat /run/secrets/db_password)
+DB_HOST=${WORDPRESS_DB_HOST}
+DB_NAME=${WORDPRESS_DB_NAME}
+DB_USER=${WORDPRESS_DB_USER}
+DB_PASSWORD=$(cat $WORDPRESS_DB_PASSWORD_FILE)
 
-# Read the WordPress database user from Docker secrets
-WORDPRESS_DB_USER=$(cat /run/secrets/db_user)
+WP_ADMIN_USER=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+WP_ADMIN_EMAIL=$(sed -n '2p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+WP_ADMIN_PASSWORD=$(sed -n '3p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
 
-# Read the WordPress admin password from Docker secrets
-WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password)
+#! Debug (to be removed)
+echo "[INFO] Environment Variables Loaded:"
+echo "       ➤ DOMAIN_NAME: $DOMAIN_NAME"
+echo "       ➤ DB_HOST: $DB_HOST"
+echo "       ➤ DB_NAME: $DB_NAME"
+echo "       ➤ DB_USER: $DB_USER"
+echo "       ➤ DB_PASSWORD: $DB_PASSWORD"
+echo "       ➤ WP_ADMIN_USER: $WP_ADMIN_USER"
+echo "       ➤ WP_ADMIN_EMAIL: $WP_ADMIN_EMAIL"
+echo "       ➤ WP_ADMIN_PASSWORD: ********"
+echo "       ➤ WORDPRESS_DB_PASSWORD_FILE: $WORDPRESS_DB_PASSWORD_FILE"
+echo "       ➤ WP_CREDENTIALS_FILE: $WP_CREDENTIALS_FILE"
 
-echo "Starting WordPress installation process..."
+# ================== Validate Required Values ====================
 
-# ======================= Check Existing Installation ======================
+[ -z "$DB_HOST" ] && echo "[ERROR] DB_HOST not set" && exit 1
+[ -z "$DB_NAME" ] && echo "[ERROR] DB_NAME not set" && exit 1
+[ -z "$DB_USER" ] && echo "[ERROR] DB_USER not set" && exit 1
+[ -z "$DB_PASSWORD" ] && echo "[ERROR] DB_PASSWORD not set" && exit 1
+[ -z "$WP_ADMIN_USER" ] && echo "[ERROR] WP_ADMIN_USER not set" && exit 1
+[ -z "$WP_ADMIN_EMAIL" ] && echo "[ERROR] WP_ADMIN_EMAIL not set" && exit 1
+[ -z "$WP_ADMIN_PASSWORD" ] && echo "[ERROR] WP_ADMIN_PASSWORD not set" && exit 1
 
-# If wp-config.php already exists, WordPress is considered installed
-if [ -f ./wp-config.php ]; then
-    echo "WordPress is already installed. Skipping download and configuration."
-    exec "$@"
+[ ! -f "$WORDPRESS_DB_PASSWORD_FILE" ] && echo "[ERROR] Missing DB password file" && exit 1
+[ ! -f "$WP_CREDENTIALS_FILE" ] && echo "[ERROR] Missing credentials file" && exit 1
+
+echo "[INFO] Starting WordPress setup..."
+
+# ========== Runtime & Directory Setup ==========
+
+mkdir -p /run/php
+chown -R www-data:www-data /run/php
+
+chown -R www-data:www-data /var/www/html
+
+## ================== Config File Setup ==================
+
+if [ ! -f "/var/www/html/wp-config.php" ]; then
+    echo "[INFO] wp-config.php not found. Creating..."
+    
+    wp config create \
+      --dbname="$DB_NAME" \
+      --dbuser="$DB_USER" \
+      --dbpass="$DB_PASSWORD" \
+      --dbhost="$DB_HOST" \
+      --path='/var/www/html' \
+      --skip-check \
+      --allow-root
+else
+    echo "[INFO] wp-config.php already exists. Skipping config creation."
 fi
 
-# If partial WordPress files exist, clean them up to avoid conflicts
-if [ -d ./wp-admin ] || [ -d ./wp-content ] || [ -d ./wp-includes ]; then
-  echo "Partial WordPress files detected. Cleaning up old files..."
-  rm -rf ./wp-admin ./wp-content ./wp-includes
+# ========== Wait for MariaDB ==========
+
+echo "[INFO] Waiting for MariaDB connection..."
+until wp db check --path='/var/www/html' --allow-root >/dev/null 2>&1; do
+    echo "[WAIT] MariaDB is not reachable yet..."
+    sleep 3
+done
+echo "[SUCCESS] Connected to MariaDB."
+
+# ================== WordPress Installation Check ==================
+
+if ! wp core is-installed --path='/var/www/html' --allow-root; then
+    echo "[INFO] WordPress tables are missing. Installing..."
+    
+    wp core install \
+      --url="https://${DOMAIN_NAME}:5050" \
+      --title="WordPress Inception" \
+      --admin_user="$WP_ADMIN_USER" \
+      --admin_password="$WP_ADMIN_PASSWORD" \
+      --admin_email="$WP_ADMIN_EMAIL" \
+      --path='/var/www/html' \
+      --skip-email \
+      --allow-root
+
+    echo "[INFO] Updating site options..."
+    wp option update blogdescription "Just another WordPress site" --path='/var/www/html' --allow-root
+    
+    echo "[SUCCESS] WordPress installation completed."
+else
+    echo "[INFO] WordPress is already installed. Skipping installation."
 fi
 
-# ======================= Download and Extract WordPress ===================
+# ================== Start Server ==================
 
-echo "Downloading WordPress core files..."
-wget -q http://wordpress.org/latest.tar.gz
+echo "[INFO] Resetting permissions before startup..."
+chown -R www-data:www-data /var/www/html
 
-echo "Extracting WordPress core files..."
-tar xfz latest.tar.gz
-mv wordpress/* .
-
-# Remove downloaded archive and temporary folder
-rm -rf latest.tar.gz wordpress
-
-# ======================= Install WP-CLI if Missing ========================
-
-if ! command -v wp &> /dev/null; then
-  echo "WP-CLI not found. Installing..."
-  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-  chmod +x wp-cli.phar
-  mv wp-cli.phar /usr/local/bin/wp
-
-  # Verify WP-CLI installation
-  php /usr/local/bin/wp --info || { echo "Error: WP-CLI installation failed."; exit 1; }
-fi
-
-# ======================= Configure wp-config.php ==========================
-
-wp config create    --dbname=$WORDPRESS_DB_NAME \
-                    --dbuser=$WORDPRESS_DB_USER \
-                    --dbpass=$MYSQL_PASSWORD    \
-                    --dbhost=$WORDPRESS_DB_HOST \
-                    --skip-check                \
-                    --allow-root
-
-# ======================= Install WordPress ================================
-
-wp core install --url="https://usogukpi.42.fr" \
-                --title="$WP_TITLE" \
-                --admin_user="$WP_ADMIN" \
-                --admin_password="$WP_ADMIN_PASSWORD" \
-                --admin_email="$WP_ADMIN_EMAIL" \
-                --allow-root
-
-# Update WordPress site title and description
-wp option update blogname "$WP_TITLE" --allow-root
-wp option update blogdescription "Just another WordPress site" --allow-root
-
-# ======================= Execute Container CMD ============================
-# Execute the container's default command after installation is complete
-exec "$@"
+echo "[INFO] Starting PHP-FPM..."
+exec php-fpm -F
