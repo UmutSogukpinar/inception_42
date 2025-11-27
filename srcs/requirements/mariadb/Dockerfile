@@ -7,9 +7,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # ===== Setup MariaDB =====
+
 # Create necessary directories and set permissions
 RUN mkdir -p /var/log/mysql /run/mysqld && \
-    chown -R mysql:mysql /var/log/mysql /run/mysqld /var/lib/mysql
+    chown -R mysql:mysql /var/log/mysql /run/mysqld
 
 # ===== Copy config files =====
 

@@ -1,9 +1,33 @@
 # ===========================================
-#             Docker Compose File,
-#           for Inception Project 42
+#             Docker Compose File
 # ===========================================
 
 services:
+
+  # ===========================================
+  #               Nginx Service               
+  # ===========================================
+
+  nginx:
+    build: ./requirements/nginx
+    image: nginx:inception
+    container_name: nginx
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    ports:
+      - "5050:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k --silent https://localhost | grep -qi 'html\\|doctype' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ===========================================
   #               MariaDB Service             
@@ -13,7 +37,6 @@ services:
     build: ./requirements/mariadb
     image: mariadb:inception
     container_name: mariadb
-    restart: always
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=wp_user
@@ -28,6 +51,41 @@ services:
     secrets:
       - db_root_password
       - db_password
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  #               WordPress Service
+  # ===========================================
+
+  wordpress:
+    build: ./requirements/wordpress
+    image: wordpress:inception
+    container_name: wordpress
+    environment:
+      - WORDPRESS_DB_HOST=mariadb
+      - WORDPRESS_DB_NAME=${DB_NAME}
+      - WORDPRESS_DB_USER=wp_user
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+      - WP_CREDENTIALS_FILE=/run/secrets/wp_admin_user
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    secrets:
+      - db_password
+      - wp_admin_user
+    healthcheck:
+      test: ["CMD", "sh", "-c", "[ -f /var/www/html/wp-config.php ]"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 
 # ===========================================
@@ -37,6 +95,10 @@ services:
 volumes:
   mariadb_data:
     driver: local
+    name: mariadb_data
+  wordpress_data:
+    driver: local
+    name: wordpress_data
 
 
 # ===========================================
@@ -45,6 +107,7 @@ volumes:
 
 networks:
   inception:
+    name: inception
     driver: bridge
 
 # ===========================================
@@ -58,10 +121,3 @@ secrets:
     file: ../secrets/db_password.txt
   wp_admin_user:
     file: ../secrets/credentials.txt
-    name: wp_admin_user
-  wp_admin_password:
-    file: ../secrets/credentials.txt
-    name: wp_admin_password
-  wp_admin_email:
-    file: ../secrets/credentials.txt
-    name: wp_admin_email
