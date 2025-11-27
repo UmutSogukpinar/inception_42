@@ -66,6 +66,7 @@ services:
     image: wordpress:inception
     container_name: wordpress
     environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
       - WORDPRESS_DB_HOST=mariadb
       - WORDPRESS_DB_NAME=${DB_NAME}
       - WORDPRESS_DB_USER=wp_user

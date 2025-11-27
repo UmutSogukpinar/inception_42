@@ -9,7 +9,7 @@ DB_ROOT_PASSWORD=$(cat $MYSQL_ROOT_PASSWORD_FILE)
 DB_NAME=${MYSQL_DATABASE}
 
 
-# Debug (to be removed)
+#! Debug (to be removed)
 echo "[INFO] Environment Variables Loaded:"
 echo "       ➤ DB_USER: $DB_USER"
 echo "       ➤ DB_NAME: $DB_NAME"
@@ -30,11 +30,13 @@ echo "       ➤ MYSQL_ROOT_PASSWORD_FILE: $MYSQL_ROOT_PASSWORD_FILE"
 # ======================= Initialize Database Directory =======================
 
 SENTINEL_FILE="/var/lib/mysql/.db_init_complete"
+IS_FRESH_INSTALL=0
 
 # Check if the sentinel file is missing
 if [ ! -f "$SENTINEL_FILE" ]; then
     
     echo "[INFO] Initialization marker not found. Starting fresh installation..."
+    IS_FRESH_INSTALL=1
     
     if [ -d "/var/lib/mysql/mysql" ]; then
         echo "[WARN] Partial or corrupt installation detected (mysql dir exists but no marker). Cleaning up..."
@@ -86,19 +88,28 @@ done
 
 echo "[INFO] Configuring Database and Users..."
 
-mysql --socket=/var/run/mysqld/mysqld.sock -u root <<EOSQL 2>&1 | tee /tmp/sql_setup.log
--- 1. Create root user accessible from everywhere (%) and set password
+if [ "$IS_FRESH_INSTALL" -eq 1 ]; then
+    echo "[INFO] Fresh installation detected: No root password set, connecting without password..."
+    MYSQL_CMD="mysql --socket=/var/run/mysqld/mysqld.sock -u root"
+else
+    echo "[INFO] Existing installation: Connecting with root password..."
+    MYSQL_CMD="mysql --socket=/var/run/mysqld/mysqld.sock -u root -p${DB_ROOT_PASSWORD}"
+fi
+
+$MYSQL_CMD <<EOSQL 2>&1 | tee /tmp/sql_setup.log
+
+-- Create root user accessible from everywhere (%) and set password
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 ALTER USER 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 
--- 2. Update localhost root password as well (required for socket connections)
+-- Update localhost root password as well (required for socket connections)
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 
--- 3. Create the application database
+-- Create the application database
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
 
--- 4. Create the application user
+-- Create the application user
 CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
 ALTER USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}'; -- Updates password if it changed
 GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
