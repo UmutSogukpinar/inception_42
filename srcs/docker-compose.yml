@@ -133,6 +133,33 @@ services:
       retries: 5
       start_period: 10s
 
+  # ===========================================
+  #               FTP Service
+  # ===========================================
+
+  ftp:
+    build: ./requirements/bonus/ftp
+    container_name: ftp
+    restart: always
+    depends_on:
+      - wordpress
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      FTP_USER: ftpuser
+    secrets:
+      - ftp_password
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 21"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
 
 # ===========================================
@@ -171,3 +198,5 @@ secrets:
     file: ../secrets/db_password.txt
   wp_admin_user:
     file: ../secrets/credentials.txt
+  ftp_password:
+    file: ../secrets/ftp_password_bonus.txt
