@@ -84,6 +84,7 @@ services:
     secrets:
       - db_password
       - wp_admin_user
+      - redis_password
     healthcheck:
       test: ["CMD", "sh", "-c", "[ -f /var/www/html/wp-config.php ]"]
       interval: 10s
@@ -96,23 +97,17 @@ services:
 
   redis:
     build: ./requirements/bonus/redis
+    image: redis:inception
     container_name: redis
     restart: always
-    depends_on:
-      - mariadb
-      - wordpress
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
+    secrets:
+      - redis_password
     networks:
       - inception
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    volumes:
+      - redis_data:/var/lib/redis
 
   # ===========================================
   #               Adminer Service
@@ -120,6 +115,7 @@ services:
 
   adminer:
     build: ./requirements/bonus/adminer
+    image: adminer:inception
     container_name: adminer
     restart: always
     ports:
@@ -141,6 +137,7 @@ services:
 
   ftp:
     build: ./requirements/bonus/ftp
+    image: ftp:inception
     container_name: ftp
     restart: always
     depends_on:
@@ -169,6 +166,7 @@ services:
 
   hugo:
     build: ./requirements/bonus/hugo
+    image: hugo:inception
     container_name: hugo
     networks:
       - inception
@@ -216,3 +214,5 @@ secrets:
     file: ../secrets/credentials.txt
   ftp_password:
     file: ../secrets/ftp_password_bonus.txt
+  redis_password:
+    file: ../secrets/redis_password_bonus.txt

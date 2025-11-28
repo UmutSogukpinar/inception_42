@@ -3,48 +3,57 @@ set -e
 
 # ================== Load Environment Variables ==================
 
+echo "[INFO] Loading secrets and environment variables..."
+
 DB_HOST=${WORDPRESS_DB_HOST}
 DB_NAME=${WORDPRESS_DB_NAME}
 DB_USER=${WORDPRESS_DB_USER}
-DB_PASSWORD=$(cat $WORDPRESS_DB_PASSWORD_FILE)
 
-WP_ADMIN_USER=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
-WP_ADMIN_EMAIL=$(sed -n '2p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
-WP_ADMIN_PASSWORD=$(sed -n '3p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+# Load Database Password
+if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
+    DB_PASSWORD=$(cat "$WORDPRESS_DB_PASSWORD_FILE")
+else
+    echo "[ERROR] Database password secret not found!"
+    exit 1
+fi
 
-#! Debug (to be removed)
-echo "[INFO] Environment Variables Loaded:"
-echo "       ➤ DOMAIN_NAME: $DOMAIN_NAME"
-echo "       ➤ DB_HOST: $DB_HOST"
-echo "       ➤ DB_NAME: $DB_NAME"
-echo "       ➤ DB_USER: $DB_USER"
-echo "       ➤ DB_PASSWORD: $DB_PASSWORD"
-echo "       ➤ WP_ADMIN_USER: $WP_ADMIN_USER"
-echo "       ➤ WP_ADMIN_EMAIL: $WP_ADMIN_EMAIL"
-echo "       ➤ WP_ADMIN_PASSWORD: ********"
-echo "       ➤ WORDPRESS_DB_PASSWORD_FILE: $WORDPRESS_DB_PASSWORD_FILE"
-echo "       ➤ WP_CREDENTIALS_FILE: $WP_CREDENTIALS_FILE"
+# Load Redis Password (CRITICAL FOR BONUS)
+# Docker Compose should map the secret to /run/secrets/redis_password
+REDIS_SECRET_FILE="/run/secrets/redis_password"
+
+if [ -f "$REDIS_SECRET_FILE" ]; then
+    REDIS_PASSWORD=$(cat "$REDIS_SECRET_FILE")
+else
+    echo "[ERROR] Redis password secret not found at $REDIS_SECRET_FILE"
+    echo "       Make sure you added 'secrets: - redis_password' to wordpress service in docker-compose.yml"
+    exit 1
+fi
+
+# Load WP Admin Credentials
+if [ -f "$WP_CREDENTIALS_FILE" ]; then
+    WP_ADMIN_USER=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+    WP_ADMIN_EMAIL=$(sed -n '2p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+    WP_ADMIN_PASSWORD=$(sed -n '3p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+else
+    echo "[ERROR] Credentials file not found!"
+    exit 1
+fi
 
 # ================== Validate Required Values ====================
 
 [ -z "$DB_HOST" ] && echo "[ERROR] DB_HOST not set" && exit 1
 [ -z "$DB_NAME" ] && echo "[ERROR] DB_NAME not set" && exit 1
 [ -z "$DB_USER" ] && echo "[ERROR] DB_USER not set" && exit 1
-[ -z "$DB_PASSWORD" ] && echo "[ERROR] DB_PASSWORD not set" && exit 1
-[ -z "$WP_ADMIN_USER" ] && echo "[ERROR] WP_ADMIN_USER not set" && exit 1
-[ -z "$WP_ADMIN_EMAIL" ] && echo "[ERROR] WP_ADMIN_EMAIL not set" && exit 1
-[ -z "$WP_ADMIN_PASSWORD" ] && echo "[ERROR] WP_ADMIN_PASSWORD not set" && exit 1
+[ -z "$DB_PASSWORD" ] && echo "[ERROR] DB_PASSWORD empty" && exit 1
+[ -z "$REDIS_PASSWORD" ] && echo "[ERROR] REDIS_PASSWORD empty" && exit 1
 
-[ ! -f "$WORDPRESS_DB_PASSWORD_FILE" ] && echo "[ERROR] Missing DB password file" && exit 1
-[ ! -f "$WP_CREDENTIALS_FILE" ] && echo "[ERROR] Missing credentials file" && exit 1
-
+echo "[INFO] All variables loaded successfully."
 echo "[INFO] Starting WordPress setup..."
 
 # ========== Runtime & Directory Setup ==========
 
 mkdir -p /run/php
 chown -R www-data:www-data /run/php
-
 chown -R www-data:www-data /var/www/html
 
 ## ================== Config File Setup ==================
@@ -61,17 +70,28 @@ if [ ! -f "/var/www/html/wp-config.php" ]; then
       --skip-check \
       --allow-root
 else
-    echo "[INFO] wp-config.php already exists. Skipping config creation."
+    echo "[INFO] wp-config.php already exists."
 fi
 
-# ========== Add Redis configuration to wp-config.php ==========
-echo "[INFO] Adding Redis configuration to wp-config.php..."
+# ========== Configure Redis Settings ==========
 
-grep -q "WP_REDIS_HOST" /var/www/html/wp-config.php || {
-    echo "define('WP_REDIS_HOST', 'redis');" >> /var/www/html/wp-config.php
-    echo "define('WP_REDIS_PORT', 6379);" >> /var/www/html/wp-config.php
-    echo "define('WP_CACHE', true);" >> /var/www/html/wp-config.php
-}
+echo "[INFO] Configuring Redis in wp-config.php..."
+
+# Set Host (Container name)
+wp config set WP_REDIS_HOST 'redis' --allow-root --type=constant
+
+# Set Port
+wp config set WP_REDIS_PORT 6379 --raw --allow-root --type=constant
+
+# Set Password (REQUIRED)
+wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant
+
+# Enable Cache
+wp config set WP_CACHE true --raw --allow-root --type=constant
+
+# Set Database Index
+wp config set WP_REDIS_DATABASE 0 --raw --allow-root --type=constant
+
 
 # ========== Wait for MariaDB ==========
 
@@ -105,17 +125,19 @@ else
     echo "[INFO] WordPress is already installed. Skipping installation."
 fi
 
-echo "[INFO] Activating Redis plugin..."
-wp plugin install redis-cache --activate --path='/var/www/html' --allow-root
+# ================== Redis Plugin Setup ==================
 
-echo "[INFO] Enabling Redis cache..."
+echo "[INFO] Checking Redis plugin status..."
+if ! wp plugin is-installed redis-cache --path='/var/www/html' --allow-root; then
+    echo "[INFO] Installing Redis plugin..."
+    wp plugin install redis-cache --activate --path='/var/www/html' --allow-root
+else
+    echo "[INFO] Redis plugin is installed. Ensuring activation..."
+    wp plugin activate redis-cache --path='/var/www/html' --allow-root
+fi
+
+echo "[INFO] Enabling Redis object cache..."
 wp redis enable --path='/var/www/html' --allow-root
-
-echo "[INFO] Updating Redis dropin..."
-wp redis update-dropin --allow-root --path='/var/www/html'
-
-echo "[SUCCESS] Redis cache enabled."
-
 
 # ================== Start Server ==================
 
