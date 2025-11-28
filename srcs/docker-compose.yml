@@ -26,7 +26,7 @@ services:
       hugo:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "curl -k --silent https://localhost | grep -qi 'html\\|doctype' || exit 1"]
+      test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -108,6 +108,11 @@ services:
       - inception
     volumes:
       - redis_data:/var/lib/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ===========================================
   #               Adminer Service
@@ -171,6 +176,26 @@ services:
     networks:
       - inception
 
+  # ===========================================
+  #             Prometheus Service
+  # ===========================================
+
+  prometheus:
+    build: ./requirements/bonus/prometheus
+    image: prometheus:inception
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - inception
+    volumes:
+      - prometheus_data:/var/lib/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:9090/-/healthy || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 
 # ===========================================
@@ -190,6 +215,9 @@ volumes:
   hugo:
     driver: local
     name: hugo
+  prometheus_data:
+    driver: local
+    name: prometheus_data
 
 
 # ===========================================
