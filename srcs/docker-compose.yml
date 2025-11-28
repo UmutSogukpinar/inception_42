@@ -23,6 +23,8 @@ services:
     depends_on:
       wordpress:
         condition: service_healthy
+      hugo:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -k --silent https://localhost | grep -qi 'html\\|doctype' || exit 1"]
       interval: 10s
@@ -161,6 +163,17 @@ services:
       retries: 5
       start_period: 10s
 
+  # ===========================================
+  #               Hugo Service
+  # ===========================================
+
+  hugo:
+    build: ./requirements/bonus/hugo
+    container_name: hugo
+    networks:
+      - inception
+
+
 
 # ===========================================
 #                  Volumes             
@@ -176,6 +189,9 @@ volumes:
   redis_data:
     driver: local
     name: redis_data
+  hugo:
+    driver: local
+    name: hugo
 
 
 # ===========================================
