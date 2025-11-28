@@ -88,6 +88,24 @@ services:
       timeout: 5s
       retries: 5
 
+  # ===========================================
+  #               Redis Service
+  # ===========================================
+
+  redis:
+    build: ./requirements/bonus/redis
+    container_name: redis
+    restart: always
+    depends_on:
+      - mariadb
+      - wordpress
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - inception
+
 
 # ===========================================
 #                  Volumes             
@@ -100,6 +118,9 @@ volumes:
   wordpress_data:
     driver: local
     name: wordpress_data
+  redis_data:
+    driver: local
+    name: redis_data
 
 
 # ===========================================

@@ -64,6 +64,15 @@ else
     echo "[INFO] wp-config.php already exists. Skipping config creation."
 fi
 
+# ========== Add Redis configuration to wp-config.php ==========
+echo "[INFO] Adding Redis configuration to wp-config.php..."
+
+grep -q "WP_REDIS_HOST" /var/www/html/wp-config.php || {
+    echo "define('WP_REDIS_HOST', 'redis');" >> /var/www/html/wp-config.php
+    echo "define('WP_REDIS_PORT', 6379);" >> /var/www/html/wp-config.php
+    echo "define('WP_CACHE', true);" >> /var/www/html/wp-config.php
+}
+
 # ========== Wait for MariaDB ==========
 
 echo "[INFO] Waiting for MariaDB connection..."
@@ -95,6 +104,18 @@ if ! wp core is-installed --path='/var/www/html' --allow-root; then
 else
     echo "[INFO] WordPress is already installed. Skipping installation."
 fi
+
+echo "[INFO] Activating Redis plugin..."
+wp plugin install redis-cache --activate --path='/var/www/html' --allow-root
+
+echo "[INFO] Enabling Redis cache..."
+wp redis enable --path='/var/www/html' --allow-root
+
+echo "[INFO] Updating Redis dropin..."
+wp redis update-dropin --allow-root --path='/var/www/html'
+
+echo "[SUCCESS] Redis cache enabled."
+
 
 # ================== Start Server ==================
 
