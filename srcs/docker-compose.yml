@@ -12,6 +12,7 @@ services:
     build: ./requirements/nginx
     image: nginx:inception
     container_name: nginx
+    restart: always
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
@@ -39,6 +40,7 @@ services:
     build: ./requirements/mariadb
     image: mariadb:inception
     container_name: mariadb
+    restart: always
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=wp_user
@@ -67,6 +69,7 @@ services:
     build: ./requirements/wordpress
     image: wordpress:inception
     container_name: wordpress
+    restart: always
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
       - WORDPRESS_DB_HOST=mariadb
@@ -198,6 +201,29 @@ services:
       retries: 5
 
 
+  # ===========================================
+  #               Grafana Service
+  # ===========================================
+
+  grafana:
+    build: ./requirements/bonus/grafana
+    image: grafana:inception
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+    secrets:
+      - grafana_admin_password
+    networks:
+      - inception
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+
 # ===========================================
 #                  Volumes             
 # ===========================================
@@ -218,6 +244,9 @@ volumes:
   prometheus_data:
     driver: local
     name: prometheus_data
+  grafana_data:
+    driver: local
+    name: grafana_data
 
 
 # ===========================================
@@ -244,3 +273,5 @@ secrets:
     file: ../secrets/ftp_password_bonus.txt
   redis_password:
     file: ../secrets/redis_password_bonus.txt
+  grafana_admin_password:
+    file: ../secrets/grafana_admin_password_bonus.txt
