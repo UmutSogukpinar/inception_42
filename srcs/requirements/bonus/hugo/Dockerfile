@@ -1,16 +1,18 @@
-FROM debian:bullseye
+FROM alpine:3.19
 
-# Install Hugo and necessary dependencies
-RUN apt-get update && \
-    apt-get install -y hugo git ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+# Install Hugo and required tools
+RUN apk add --no-cache \
+    hugo \
+    git \
+    ca-certificates \
+    && update-ca-certificates
 
 # Arrange working directory
 WORKDIR /opt/site
 
-# Copy the Hugo initialization script into the container
-COPY hugo_init.sh /usr/local/bin/hugo_init.sh
-RUN chmod +x /usr/local/bin/hugo_init.sh
+# Copy the Hugo initialization script
+COPY init.sh /usr/local/bin/init.sh
+RUN chmod +x /usr/local/bin/init.sh
 
-# Set the entrypoint to the Hugo initialization script
-ENTRYPOINT ["/usr/local/bin/hugo_init.sh"]
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/init.sh"]

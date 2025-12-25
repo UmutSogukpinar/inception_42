@@ -20,5 +20,6 @@ RUN mkdir -p /var/run/nginx /etc/nginx/ssl
 
 # Set entrypoint and default CMD
 ENTRYPOINT ["/installer.sh"]
+
 CMD ["nginx", "-g", "daemon off;"]
 

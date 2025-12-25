@@ -10,7 +10,7 @@ services:
 
   nginx:
     build: ./requirements/nginx
-    image: nginx:inception
+    image: inception/nginx:inception
     container_name: nginx
     restart: always
     environment:
@@ -38,7 +38,7 @@ services:
 
   mariadb:
     build: ./requirements/mariadb
-    image: mariadb:inception
+    image: inception/mariadb:inception
     container_name: mariadb
     restart: always
     environment:
@@ -67,7 +67,7 @@ services:
 
   wordpress:
     build: ./requirements/wordpress
-    image: wordpress:inception
+    image: inception/wordpress:inception
     container_name: wordpress
     restart: always
     environment:
@@ -100,7 +100,7 @@ services:
 
   redis:
     build: ./requirements/bonus/redis
-    image: redis:inception
+    image: inception/redis:inception
     container_name: redis
     restart: always
     ports:
@@ -123,7 +123,7 @@ services:
 
   adminer:
     build: ./requirements/bonus/adminer
-    image: adminer:inception
+    image: inception/adminer:inception
     container_name: adminer
     restart: always
     ports:
@@ -145,7 +145,7 @@ services:
 
   ftp:
     build: ./requirements/bonus/ftp
-    image: ftp:inception
+    image: inception/ftp:inception
     container_name: ftp
     restart: always
     depends_on:
@@ -174,8 +174,9 @@ services:
 
   hugo:
     build: ./requirements/bonus/hugo
-    image: hugo:inception
+    image: inception/hugo:inception
     container_name: hugo
+    restart: always
     networks:
       - inception
 
@@ -185,7 +186,7 @@ services:
 
   prometheus:
     build: ./requirements/bonus/prometheus
-    image: prometheus:inception
+    image: inception/prometheus:inception
     container_name: prometheus
     restart: always
     ports:
@@ -207,7 +208,7 @@ services:
 
   grafana:
     build: ./requirements/bonus/grafana
-    image: grafana:inception
+    image: inception/grafana:inception
     container_name: grafana
     restart: always
     ports:
