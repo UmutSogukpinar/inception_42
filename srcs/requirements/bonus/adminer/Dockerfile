@@ -1,25 +1,32 @@
-FROM debian:bullseye
+FROM alpine:3.20
 
-# Install PHP and tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    php7.4 \
-    php7.4-cli \
-    php7.4-curl \
-    php7.4-mysql \
-    php7.4-json \
-    php7.4-xml \
-    wget \
+# ===== Install PHP and utilities =====
+
+RUN apk add --no-cache \
+    php \
+    php-cli \
+    php-session \
+    php-mysqli \
+    php-pdo_mysql \
+    php-json \
+    php-xml \
+    php-curl \
     curl \
-    ca-certificates \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    wget \
+    ca-certificates
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Download Adminer
-RUN wget -O index.php https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php
+# ===== Download Adminer =====
 
+# --no-check-certificate added to avoid SSL issues on Alpine
+RUN wget --no-check-certificate -O index.php https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php
+
+
+# Expose Port
 EXPOSE 8080
+
+# ===== Start PHP built-in server =====
 
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]

@@ -1,26 +1,27 @@
-FROM debian:bullseye
+FROM alpine:3.20
 
-# Install vsftpd and OpenSSL
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# ===== Install necessary packages =====
+
+RUN apk add --no-cache \
     vsftpd \
     openssl \
-    netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/*
+    netcat-openbsd
 
-# Create directory for WordPress files
+# Create WordPress directory
 RUN mkdir -p /var/www/html
 
-# Create secure chroot directory required by vsftpd
+# Create secure chroot directory for vsftpd
 RUN mkdir -p /var/run/vsftpd/empty
 
-# Copy configuration file
+# Copy vsftpd configuration
 COPY conf/vsftpd.conf /etc/vsftpd.conf
 
-# Copy entrypoint script
+# Copy and make entrypoint script executable
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Expose FTP ports
 EXPOSE 21
 EXPOSE 30000-30009
 
-CMD ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

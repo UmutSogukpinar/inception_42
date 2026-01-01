@@ -20,7 +20,7 @@ COPY conf/datasource.yaml /etc/grafana/provisioning/datasources/datasource.yaml
 COPY tools/init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
 
-# 5. Set Permissions
+# Set Permissions
 RUN mkdir -p /var/lib/grafana && \
     chown -R grafana:grafana /var/lib/grafana /etc/grafana
 
@@ -34,5 +34,4 @@ EXPOSE 3000
 USER grafana
 WORKDIR /usr/share/grafana
 
-# Start via Script
 ENTRYPOINT ["/usr/local/bin/init.sh"]

@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.18
 
 # Install Redis and create necessary directories with proper permissions
 RUN apk add --no-cache redis \
