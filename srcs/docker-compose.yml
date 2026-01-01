@@ -154,7 +154,7 @@ services:
       - "21:21"
       - "30000-30009:30000-30009"
     environment:
-      FTP_USER: ftpuser
+      FTP_USER: ${FTP_USER}
     secrets:
       - ftp_password
     volumes:
@@ -175,6 +175,8 @@ services:
   hugo:
     build: ./requirements/bonus/hugo
     image: inception/hugo:inception
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
     container_name: hugo
     restart: always
     networks:

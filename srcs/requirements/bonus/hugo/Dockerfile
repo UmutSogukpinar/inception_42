@@ -1,18 +1,20 @@
-FROM alpine:3.19
+FROM alpine:3.18
 
-# Install Hugo and required tools
-RUN apk add --no-cache \
+# Hugo ve gerekli araçları kur
+RUN apk update && apk add --no-cache \
     hugo \
     git \
-    ca-certificates \
-    && update-ca-certificates
+    shadow \
+    bash
 
-# Arrange working directory
-WORKDIR /opt/site
+# Scripti kopyala
+COPY init.sh /hugo_setup.sh
+RUN chmod +x /hugo_setup.sh
 
-# Copy the Hugo initialization script
-COPY init.sh /usr/local/bin/init.sh
-RUN chmod +x /usr/local/bin/init.sh
+# Çalışma dizinini ayarla
+WORKDIR /var/hugo
 
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/init.sh"]
+# Portu aç
+EXPOSE 1313
+
+ENTRYPOINT ["/hugo_setup.sh"]
