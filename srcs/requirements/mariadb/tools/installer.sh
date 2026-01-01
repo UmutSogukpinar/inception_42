@@ -49,7 +49,7 @@ echo "[SUCCESS] MariaDB is ready."
 
 echo "[INFO] Configuring database and users..."
 
-mysql --socket="$SOCKET" -u root <<EOSQL
+mysql --socket="$SOCKET" -u root -p"${DB_ROOT_PASSWORD}" <<EOSQL
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
