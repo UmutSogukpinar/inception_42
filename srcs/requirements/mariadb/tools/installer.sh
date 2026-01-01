@@ -24,7 +24,7 @@ echo "[INFO] MariaDB entrypoint starting..."
 
 if [ ! -d "$DATADIR/mysql" ]; then
     echo "[INFO] Database directory empty. Initializing..."
-    mysqld --initialize-insecure --user=mysql --datadir="$DATADIR"
+    mysqld --initialize-insecure
     echo "[SUCCESS] Database initialized."
 else
     echo "[INFO] Existing database detected. Skipping initialization."
@@ -33,12 +33,12 @@ fi
 # ======================= Temporary server =======================
 
 echo "[INFO] Starting temporary MariaDB (socket only)..."
-mysqld --user=mysql --skip-networking --socket="$SOCKET" &
+mysqld --skip-networking &
 PID=$!
 
 echo "[INFO] Waiting for MariaDB to be ready..."
 
-until mysqladmin ping --socket="$SOCKET" --silent; do
+until mysqladmin ping --silent; do
     echo "[WAIT] MariaDB not ready yet..."
     sleep 1
 done
@@ -49,7 +49,7 @@ echo "[SUCCESS] MariaDB is ready."
 
 echo "[INFO] Configuring database and users..."
 
-mysql --socket="$SOCKET" -u root -p"${DB_ROOT_PASSWORD}" <<EOSQL
+mysql -u root -p"${DB_ROOT_PASSWORD}" <<EOSQL
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
@@ -67,7 +67,7 @@ echo "[SUCCESS] Database and users configured."
 # ======================= Shutdown temp server =======================
 
 echo "[INFO] Shutting down temporary MariaDB..."
-mysqladmin --socket="$SOCKET" -u root -p"${DB_ROOT_PASSWORD}" shutdown
+mysqladmin -u root -p"${DB_ROOT_PASSWORD}" shutdown
 wait "$PID"
 
 echo "[SUCCESS] Temporary MariaDB stopped."
@@ -75,4 +75,4 @@ echo "[SUCCESS] Temporary MariaDB stopped."
 # ======================= Start real server =======================
 
 echo "[INFO] Starting MariaDB server..."
-exec mysqld --user=mysql --socket="$SOCKET"
+exec mysqld
