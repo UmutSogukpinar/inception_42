@@ -46,6 +46,7 @@ services:
       - MYSQL_USER=wp_user
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_DATADIR=${DATA_DIR}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -232,21 +233,33 @@ services:
 # ===========================================
 
 volumes:
+
   mariadb_data:
     driver: local
-    name: mariadb_data
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/mariadb
+
   wordpress_data:
     driver: local
-    name: wordpress_data
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/wordpress
+
   redis_data:
     driver: local
     name: redis_data
+  
   hugo:
     driver: local
     name: hugo
+
   prometheus_data:
     driver: local
     name: prometheus_data
+
   grafana_data:
     driver: local
     name: grafana_data

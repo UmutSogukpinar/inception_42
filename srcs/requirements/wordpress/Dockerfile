@@ -1,24 +1,20 @@
-FROM debian:bullseye
+FROM debian:bookworm-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
-    bash \
-    curl \
-    wget \
-    ca-certificates \
-    mariadb-client \
-    php7.4 \
-    php7.4-cli \
-    php7.4-cgi \
-    php7.4-fpm \
-    php7.4-mysql \
-    php7.4-gd \
-    php7.4-mbstring \
-    php7.4-pdo \
-    php7.4-xml \
-    php7.4-curl \
-    php-redis \
- && rm -rf /var/lib/apt/lists/*
+# Install system packages (PHP 8.2)
+RUN apt-get update && \
+    apt-get install -y --fix-missing --no-install-recommends \
+        bash curl wget ca-certificates \
+        mariadb-client \
+        php8.2 \
+        php8.2-cli \
+        php8.2-fpm \
+        php8.2-mysql \
+        php8.2-gd \
+        php8.2-mbstring \
+        php8.2-xml \
+        php8.2-curl \
+        php-redis \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install WordPress CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -27,24 +23,22 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Set working directory
 WORKDIR /var/www/html
 
-# Download WordPress core
+# Download and extract WordPress core
 RUN wget https://wordpress.org/latest.tar.gz && \
     tar -xzf latest.tar.gz && rm latest.tar.gz && \
     mv wordpress/* . && rm -rf wordpress
 
 # Copy PHP-FPM configuration
-COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+COPY ./conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 
-# Create symlink for php-fpm
-RUN ln -s /usr/sbin/php-fpm7.4 /usr/sbin/php-fpm
+# Create a symlink for php-fpm binary
+RUN ln -s /usr/sbin/php-fpm8.2 /usr/sbin/php-fpm
 
-# Copy and prepare installer script
+# Copy installer script
 COPY ./tools/installer.sh /usr/local/bin/wordpressInstaller.sh
-
 RUN chmod +x /usr/local/bin/wordpressInstaller.sh
 
-# Expose port
+# Expose PHP-FPM port and set entrypoint
 EXPOSE 9000
 
-# Set entrypoint (installer will run php-fpm)
 ENTRYPOINT ["/usr/local/bin/wordpressInstaller.sh"]

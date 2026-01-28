@@ -4,11 +4,12 @@ FROM debian:bullseye
 EXPOSE 443
 
 # Install nginx, openssl and curl
-RUN apt-get update && apt-get install -y --fix-missing \
+RUN apt-get update && \
+    apt-get install -y --fix-missing --no-install-recommends \
     nginx \
     openssl \
     curl \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy configuration and entrypoint
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
