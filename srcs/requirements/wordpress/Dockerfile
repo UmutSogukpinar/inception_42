@@ -17,12 +17,12 @@ RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
     php7.4-pdo \
     php7.4-xml \
     php7.4-curl \
+    php-redis \
  && rm -rf /var/lib/apt/lists/*
 
 # Install WordPress CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
-
 
 # Set working directory
 WORKDIR /var/www/html

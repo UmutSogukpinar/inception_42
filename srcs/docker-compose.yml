@@ -10,8 +10,9 @@ services:
 
   nginx:
     build: ./requirements/nginx
-    image: nginx:inception
+    image: inception/nginx:inception
     container_name: nginx
+    restart: always
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
@@ -23,8 +24,10 @@ services:
     depends_on:
       wordpress:
         condition: service_healthy
+      hugo:
+        condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "curl -k --silent https://localhost | grep -qi 'html\\|doctype' || exit 1"]
+      test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,8 +38,9 @@ services:
 
   mariadb:
     build: ./requirements/mariadb
-    image: mariadb:inception
+    image: inception/mariadb:inception
     container_name: mariadb
+    restart: always
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=wp_user
@@ -63,8 +67,9 @@ services:
 
   wordpress:
     build: ./requirements/wordpress
-    image: wordpress:inception
+    image: inception/wordpress:inception
     container_name: wordpress
+    restart: always
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
       - WORDPRESS_DB_HOST=mariadb
@@ -82,11 +87,144 @@ services:
     secrets:
       - db_password
       - wp_admin_user
+      - redis_password
     healthcheck:
       test: ["CMD", "sh", "-c", "[ -f /var/www/html/wp-config.php ]"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ===========================================
+  #               Redis Service
+  # ===========================================
+
+  redis:
+    build: ./requirements/bonus/redis
+    image: inception/redis:inception
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    secrets:
+      - redis_password
+    networks:
+      - inception
+    volumes:
+      - redis_data:/var/lib/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  #               Adminer Service
+  # ===========================================
+
+  adminer:
+    build: ./requirements/bonus/adminer
+    image: inception/adminer:inception
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ===========================================
+  #               FTP Service
+  # ===========================================
+
+  ftp:
+    build: ./requirements/bonus/ftp
+    image: inception/ftp:inception
+    container_name: ftp
+    restart: always
+    depends_on:
+      - wordpress
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      FTP_USER: ${FTP_USER}
+    secrets:
+      - ftp_password
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 21"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ===========================================
+  #               Hugo Service
+  # ===========================================
+
+  hugo:
+    build: ./requirements/bonus/hugo
+    image: inception/hugo:inception
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+    container_name: hugo
+    restart: always
+    networks:
+      - inception
+
+  # ===========================================
+  #             Prometheus Service
+  # ===========================================
+
+  prometheus:
+    build: ./requirements/bonus/prometheus
+    image: inception/prometheus:inception
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - inception
+    volumes:
+      - prometheus_data:/var/lib/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:9090/-/healthy || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # ===========================================
+  #               Grafana Service
+  # ===========================================
+
+  grafana:
+    build: ./requirements/bonus/grafana
+    image: inception/grafana:inception
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+    secrets:
+      - grafana_admin_password
+    networks:
+      - inception
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 
 # ===========================================
@@ -100,6 +238,18 @@ volumes:
   wordpress_data:
     driver: local
     name: wordpress_data
+  redis_data:
+    driver: local
+    name: redis_data
+  hugo:
+    driver: local
+    name: hugo
+  prometheus_data:
+    driver: local
+    name: prometheus_data
+  grafana_data:
+    driver: local
+    name: grafana_data
 
 
 # ===========================================
@@ -122,3 +272,9 @@ secrets:
     file: ../secrets/db_password.txt
   wp_admin_user:
     file: ../secrets/credentials.txt
+  ftp_password:
+    file: ../secrets/ftp_password_bonus.txt
+  redis_password:
+    file: ../secrets/redis_password_bonus.txt
+  grafana_admin_password:
+    file: ../secrets/grafana_admin_password_bonus.txt
