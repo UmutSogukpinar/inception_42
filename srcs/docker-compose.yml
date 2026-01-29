@@ -46,7 +46,6 @@ services:
       - MYSQL_USER=wp_user
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - MYSQL_DATADIR=${DATA_DIR}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
