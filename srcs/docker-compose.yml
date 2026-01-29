@@ -21,11 +21,13 @@ services:
       - wordpress_data:/var/www/html
     networks:
       - inception
+
     depends_on:
       wordpress:
         condition: service_healthy
       hugo:
         condition: service_started
+
     healthcheck:
       test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
       interval: 10s

@@ -1,19 +1,15 @@
 #!/bin/bash
 
-# Hata durumunda dur
 set -e
 
-# Domain kontrolü (Env gelmezse hata vermemesi için)
 if [ -z "$DOMAIN_NAME" ]; then
     DOMAIN_NAME="localhost"
 fi
 
-# Çalışma dizini (Dockerfile'daki WORKDIR ile uyumlu olmalı)
 DIR="/var/hugo/me"
 
 echo "[INFO] Starting Hugo Setup..."
 
-# Eğer site zaten varsa temizle ve yeniden oluştur (Bonus olduğu için her seferinde sıfırdan kurması daha temizdir)
 if [ -d "$DIR" ]; then
     echo "[INFO] Cleaning up existing directory..."
     rm -rf "$DIR"
@@ -23,10 +19,9 @@ echo "[INFO] Creating new site..."
 mkdir -p "$DIR"
 cd "$DIR"
 
-# Yeni Hugo sitesi oluştur
+# create new site
 hugo new site . --force --format yaml
 
-# Config dosyasını yaz
 echo "[INFO] Configuring config.yaml..."
 cat > config.yaml <<EOF
 baseURL: "https://${DOMAIN_NAME}/hugo/"
@@ -36,7 +31,7 @@ theme: []
 disableKinds: ["taxonomy", "taxonomyTerm"]
 EOF
 
-# CSS Stilleri
+# CSS styles
 STYLE="
 <style>
     :root { --bg: #1a1b26; --text: #a9b1d6; --accent: #7aa2f7; }
@@ -48,10 +43,10 @@ STYLE="
 </style>
 "
 
-# Layouts oluştur
+# Create Layout
 mkdir -p layouts/_default
 
-# List.html (Anasayfa)
+# List.html
 cat > layouts/_default/list.html <<EOF
 <!DOCTYPE html>
 <html>
@@ -88,7 +83,7 @@ cat > layouts/_default/single.html <<EOF
 </html>
 EOF
 
-# İçerik oluştur
+# Create Content
 echo "[INFO] Creating Content..."
 mkdir -p content
 cat > content/_index.md <<EOF
@@ -106,9 +101,7 @@ EOF
 
 echo "[INFO] Setup complete. Starting Server..."
 
-# Sunucuyu başlat
-# --bind="0.0.0.0" -> Docker dışından erişim için şart
-# --baseURL -> Nginx'in proxy ayarı ile eşleşmeli
+# execute server
 exec hugo server \
     --bind="0.0.0.0" \
     --baseURL="https://${DOMAIN_NAME}/hugo/" \

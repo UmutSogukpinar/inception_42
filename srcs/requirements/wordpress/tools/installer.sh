@@ -83,7 +83,7 @@ wp config set WP_REDIS_HOST 'redis' --allow-root --type=constant
 # Set Port
 wp config set WP_REDIS_PORT 6379 --raw --allow-root --type=constant
 
-# Set Password (REQUIRED)
+# Set Password
 wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant
 
 # Enable Cache
