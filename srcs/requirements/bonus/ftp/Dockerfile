@@ -1,11 +1,12 @@
-FROM alpine:3.20
+FROM alpine:3.22
 
 # ===== Install necessary packages =====
 
 RUN apk add --no-cache \
     vsftpd \
     openssl \
-    netcat-openbsd
+    netcat-openbsd \
+    lftp
 
 # Create WordPress directory
 RUN mkdir -p /var/www/html

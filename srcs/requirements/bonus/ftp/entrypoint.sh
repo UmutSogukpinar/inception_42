@@ -6,7 +6,7 @@ set -e
 
 FTP_USER=${FTP_USER}
 
-# ===== Load FTP Password =====
+# ========== Load FTP Password ==========
 
 # Prefer Docker secret, fallback to env var or default
 if [ -f "/run/secrets/ftp_password" ]; then
@@ -16,14 +16,14 @@ else
     echo "[WARNING] Secret not found, using Environment/Default password."
 fi
 
-# ===== Check if FTP user exists =====
+# ========== Check if FTP user exists ==========
 
 if id "$FTP_USER" >/dev/null 2>&1; then
     echo "[INFO] FTP user '$FTP_USER' already exists. Skipping creation."
 else
     echo "[INFO] Creating FTP user: $FTP_USER"
     
-    # ===== Add user =====
+    # ========== Add user ==========
 
     # -D disables password prompt, -h sets home directory
     adduser -D -h /var/www/html "$FTP_USER"
@@ -38,6 +38,6 @@ else
     chown -R "$FTP_USER:$FTP_USER" /var/www/html
 fi
 
-# ===== Start vsftpd =====
+# ========== Start vsftpd ==========
 echo "[INFO] Starting vsftpd..."
 exec /usr/sbin/vsftpd /etc/vsftpd.conf

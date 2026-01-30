@@ -1,8 +1,9 @@
-NAME=inception
+NAME          = inception
+DOCKER_COMPOSE = docker compose -f ./srcs/docker-compose.yml
+# Use the current user's home to make it portable
+DATA_DIR      = $(HOME)/data
 
-DATA_DIR=/home/umut/data
-
-# ===== Colors =====
+# Colors
 GREEN  = \033[0;32m
 BLUE   = \033[0;34m
 YELLOW = \033[0;33m
@@ -12,30 +13,30 @@ RESET  = \033[0m
 all: up
 
 init:
-	@echo "$(BLUE)[INFO]$(RESET) Checking data directory..."
-	@sh ./init.sh
-	@echo "$(GREEN)[OK]$(RESET) Data directory ready: $(DATA_DIR)"
+	@echo "$(BLUE)[INFO]$(RESET) Initializing environment..."
+	@bash ./tools/util.sh --init
 
 up: init
-	@echo "$(BLUE)[INFO]$(RESET) Starting $(NAME) containers..."
-	@docker compose -f ./srcs/docker-compose.yml up -d --build
-	@echo "$(GREEN)[SUCCESS]$(RESET) $(NAME) is up and running"
+	@echo "$(BLUE)[INFO]$(RESET) Building and starting containers..."
+	@$(DOCKER_COMPOSE) up -d --build
+	@echo "$(GREEN)[SUCCESS]$(RESET) Service is running at https:usogukpi.42.fr"
 
 down:
-	@echo "$(YELLOW)[INFO]$(RESET) Stopping $(NAME) containers..."
-	@docker compose -f ./srcs/docker-compose.yml down
-	@echo "$(GREEN)[OK]$(RESET) Containers stopped"
+	@echo "$(YELLOW)[INFO]$(RESET) Stopping containers..."
+	@$(DOCKER_COMPOSE) down
+	@echo "$(GREEN)[OK]$(RESET) Containers stopped."
 
 clean:
-	@echo "$(YELLOW)[INFO]$(RESET) Removing containers and volumes..."
-	@docker compose -f ./srcs/docker-compose.yml down -v
-	@echo "$(GREEN)[OK]$(RESET) Containers and volumes removed"
+	@echo "$(YELLOW)[INFO]$(RESET) Removing containers and project volumes..."
+	@$(DOCKER_COMPOSE) down -v
+	@echo "$(GREEN)[OK]$(RESET) Project volumes deleted."
 
 fclean: clean
-	@echo "$(RED)[WARN]$(RESET) Pruning Docker system (all unused data)..."
-	@docker system prune -af --volumes
-	@echo "$(GREEN)[OK]$(RESET) Docker system fully cleaned"
+	@echo "$(RED)[WARN]$(RESET) Executing deep clean..."
+	@sudo bash ./tools/util.sh --clear
+	@docker system prune -af
+	@echo "$(GREEN)[OK]$(RESET) Entire environment wiped."
 
 re: fclean all
 
-.PHONY: all up down clean fclean re init
+.PHONY: all init up down clean fclean re

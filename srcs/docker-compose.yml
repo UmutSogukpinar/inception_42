@@ -16,7 +16,7 @@ services:
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
-      - "5050:443"
+      - "443:443"
     volumes:
       - wordpress_data:/var/www/html
     networks:

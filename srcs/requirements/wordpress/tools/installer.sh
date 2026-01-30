@@ -73,7 +73,7 @@ else
     echo "[INFO] wp-config.php already exists."
 fi
 
-# ========== Configure Redis Settings ==========
+# ========== Configure Redis Settings (Bonus) ==========
 
 echo "[INFO] Configuring Redis in wp-config.php..."
 
@@ -108,7 +108,7 @@ if ! wp core is-installed --path='/var/www/html' --allow-root; then
     echo "[INFO] WordPress tables are missing. Installing..."
     
     wp core install \
-      --url="https://${DOMAIN_NAME}:5050" \
+      --url="https://${DOMAIN_NAME}" \
       --title="WordPress Inception" \
       --admin_user="$WP_ADMIN_USER" \
       --admin_password="$WP_ADMIN_PASSWORD" \
@@ -125,7 +125,7 @@ else
     echo "[INFO] WordPress is already installed. Skipping installation."
 fi
 
-# ================== Redis Plugin Setup ==================
+# ================== Redis Plugin Setup (Bonus) ==================
 
 echo "[INFO] Checking Redis plugin status..."
 if ! wp plugin is-installed redis-cache --path='/var/www/html' --allow-root; then
