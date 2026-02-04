@@ -11,7 +11,6 @@ RUN apk add --no-cache \
     php-json \
     php-xml \
     php-curl \
-    curl \
     wget \
     ca-certificates
 

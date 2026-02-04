@@ -18,14 +18,15 @@ RUN apt-get update && \
 
 # Install WordPress CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Download and extract WordPress core
-RUN wget https://wordpress.org/latest.tar.gz && \
-    tar -xzf latest.tar.gz && rm latest.tar.gz && \
+RUN wget https://wordpress.org/wordpress-6.9.tar.gz && \
+    tar -xzf wordpress-6.9.tar.gz && rm wordpress-6.9.tar.gz && \
     mv wordpress/* . && rm -rf wordpress
 
 # Copy PHP-FPM configuration

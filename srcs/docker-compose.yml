@@ -137,11 +137,11 @@ services:
     networks:
       - inception
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+          test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:8080 || exit 1"]
+          interval: 30s
+          timeout: 5s
+          retries: 3
+          start_period: 10s
 
   # ===========================================
   #               FTP Service

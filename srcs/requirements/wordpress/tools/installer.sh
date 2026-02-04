@@ -5,6 +5,8 @@ set -e
 
 echo "[INFO] Loading secrets and environment variables..."
 
+WP_PATH="/var/www/html"
+
 DB_HOST=${WORDPRESS_DB_HOST}
 DB_NAME=${WORDPRESS_DB_NAME}
 DB_USER=${WORDPRESS_DB_USER}
@@ -54,11 +56,11 @@ echo "[INFO] Starting WordPress setup..."
 
 mkdir -p /run/php
 chown -R www-data:www-data /run/php
-chown -R www-data:www-data /var/www/html
+chown -R www-data:www-data "$WP_PATH"
 
 ## ================== Config File Setup ==================
 
-if [ ! -f "/var/www/html/wp-config.php" ]; then
+if [ ! -f "$WP_PATH/wp-config.php" ]; then
     echo "[INFO] wp-config.php not found. Creating..."
     
     wp config create \
@@ -66,7 +68,7 @@ if [ ! -f "/var/www/html/wp-config.php" ]; then
       --dbuser="$DB_USER" \
       --dbpass="$DB_PASSWORD" \
       --dbhost="$DB_HOST" \
-      --path='/var/www/html' \
+      --path="$WP_PATH" \
       --skip-check \
       --allow-root
 else
@@ -75,13 +77,15 @@ fi
 
 # ========== Configure Redis Settings (Bonus) ==========
 
+WP_REDIS_PORT=6379
+
 echo "[INFO] Configuring Redis in wp-config.php..."
 
 # Set Host (Container name)
 wp config set WP_REDIS_HOST 'redis' --allow-root --type=constant
 
 # Set Port
-wp config set WP_REDIS_PORT 6379 --raw --allow-root --type=constant
+wp config set WP_REDIS_PORT "$WP_REDIS_PORT" --raw --allow-root --type=constant
 
 # Set Password
 wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant
@@ -95,30 +99,35 @@ wp config set WP_REDIS_DATABASE 0 --raw --allow-root --type=constant
 
 # ========== Wait for MariaDB ==========
 
+BLACK_HOLE="/dev/null"
+
 echo "[INFO] Waiting for MariaDB connection..."
-until wp db check --path='/var/www/html' --allow-root >/dev/null 2>&1; do
+until wp db check --path="$WP_PATH" --allow-root > "$BLACK_HOLE" 2>&1; do
     echo "[WAIT] MariaDB is not reachable yet..."
     sleep 3
 done
+
 echo "[SUCCESS] Connected to MariaDB."
 
 # ================== WordPress Installation Check ==================
 
-if ! wp core is-installed --path='/var/www/html' --allow-root; then
+WP_TITLE="WordPress Inception"
+
+if ! wp core is-installed --path="$WP_PATH" --allow-root; then
     echo "[INFO] WordPress tables are missing. Installing..."
     
     wp core install \
-      --url="https://${DOMAIN_NAME}" \
-      --title="WordPress Inception" \
+      --url="https://$DOMAIN_NAME" \
+      --title="$WP_TITLE" \
       --admin_user="$WP_ADMIN_USER" \
       --admin_password="$WP_ADMIN_PASSWORD" \
       --admin_email="$WP_ADMIN_EMAIL" \
-      --path='/var/www/html' \
+      --path="$WP_PATH" \
       --skip-email \
       --allow-root
 
     echo "[INFO] Updating site options..."
-    wp option update blogdescription "Just another WordPress site" --path='/var/www/html' --allow-root
+    wp option update blogdescription "Just another WordPress site" --path="$WP_PATH" --allow-root
     
     echo "[SUCCESS] WordPress installation completed."
 else
@@ -128,21 +137,21 @@ fi
 # ================== Redis Plugin Setup (Bonus) ==================
 
 echo "[INFO] Checking Redis plugin status..."
-if ! wp plugin is-installed redis-cache --path='/var/www/html' --allow-root; then
+if ! wp plugin is-installed redis-cache --path="$WP_PATH" --allow-root; then
     echo "[INFO] Installing Redis plugin..."
-    wp plugin install redis-cache --activate --path='/var/www/html' --allow-root
+    wp plugin install redis-cache --activate --path="$WP_PATH" --allow-root
 else
     echo "[INFO] Redis plugin is installed. Ensuring activation..."
-    wp plugin activate redis-cache --path='/var/www/html' --allow-root
+    wp plugin activate redis-cache --path="$WP_PATH" --allow-root
 fi
 
 echo "[INFO] Enabling Redis object cache..."
-wp redis enable --path='/var/www/html' --allow-root
+wp redis enable --path="$WP_PATH" --allow-root
 
 # ================== Start Server ==================
 
 echo "[INFO] Resetting permissions before startup..."
-chown -R www-data:www-data /var/www/html
+chown -R www-data:www-data "$WP_PATH"
 
 echo "[INFO] Starting PHP-FPM..."
 exec php-fpm -F
