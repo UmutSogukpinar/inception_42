@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Stop execution on any error
 set -e
 
 echo "[INFO] Starting Grafana Setup..."
@@ -16,7 +15,8 @@ else
     echo "[WARNING] Secret file not found. Using default or existing config."
 fi
 
-# Start Grafana server
+# ============ Start Grafana server ============
+
 echo "[INFO] Starting Grafana Server..."
 
 exec /usr/sbin/grafana-server \

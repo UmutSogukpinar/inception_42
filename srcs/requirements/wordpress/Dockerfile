@@ -35,10 +35,10 @@ COPY ./conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 RUN ln -s /usr/sbin/php-fpm8.2 /usr/sbin/php-fpm
 
 # Copy installer script
-COPY ./tools/installer.sh /usr/local/bin/wordpressInstaller.sh
-RUN chmod +x /usr/local/bin/wordpressInstaller.sh
+COPY ./tools/installer.sh /usr/local/bin/wp_installer.sh
+RUN chmod +x /usr/local/bin/wp_installer.sh
 
 # Expose PHP-FPM port and set entrypoint
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/local/bin/wordpressInstaller.sh"]
+ENTRYPOINT ["/usr/local/bin/wp_installer.sh"]

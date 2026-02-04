@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm-slim
 
 # Expose port
 EXPOSE 443
@@ -13,14 +13,14 @@ RUN apt-get update && \
 
 # Copy configuration and entrypoint
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY ./tools/installer.sh /installer.sh
-RUN chmod +x /installer.sh
+COPY ./tools/installer.sh /usr/local/bin/nginx_installer.sh
+RUN chmod +x /usr/local/bin/nginx_installer.sh
 
 # Create necessary directories
 RUN mkdir -p /var/run/nginx /etc/nginx/ssl
 
 # Set entrypoint and default CMD
-ENTRYPOINT ["/installer.sh"]
+ENTRYPOINT ["/usr/local/bin/nginx_installer.sh"]
 
 CMD ["nginx", "-g", "daemon off;"]
 

@@ -2,10 +2,10 @@ FROM debian:bookworm-slim
 
 # Install MariaDB server and client
 RUN apt-get update && \
-	apt-get install -y --fix-missing --no-install-recommends \
+    apt-get install -y --fix-missing --no-install-recommends \
     mariadb-client \
     mariadb-server \
-	&& rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # ===== Setup MariaDB =====
 
@@ -17,14 +17,14 @@ RUN mkdir -p /var/log/mysql /run/mysqld /var/lib/mysql && \
 
 COPY ./conf/mariadb.cnf /etc/mysql/mariadb.conf.d/
 
-COPY ./tools/installer.sh /usr/local/bin/mariadb_install.sh
+COPY ./tools/installer.sh /usr/local/bin/mariadb_installer.sh
 
 # Make the installer script executable
-RUN chmod +x /usr/local/bin/mariadb_install.sh
+RUN chmod +x /usr/local/bin/mariadb_installer.sh
 
 # Expose port
 EXPOSE 3306
 
 
 # ===== Set entrypoint =====
-ENTRYPOINT ["/usr/local/bin/mariadb_install.sh"]
+ENTRYPOINT ["/usr/local/bin/mariadb_installer.sh"]
