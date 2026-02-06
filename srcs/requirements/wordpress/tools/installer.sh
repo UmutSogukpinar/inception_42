@@ -7,9 +7,9 @@ echo "[INFO] Loading secrets and environment variables..."
 
 WP_PATH="/var/www/html"
 
-DB_HOST=${WORDPRESS_DB_HOST}
-DB_NAME=${WORDPRESS_DB_NAME}
-DB_USER=${WORDPRESS_DB_USER}
+DB_HOST=$WORDPRESS_DB_HOST
+DB_NAME=$WORDPRESS_DB_NAME
+DB_USER=$WORDPRESS_DB_USER
 
 # Load Database Password
 if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
