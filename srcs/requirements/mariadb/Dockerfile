@@ -25,6 +25,5 @@ RUN chmod +x /usr/local/bin/mariadb_installer.sh
 # Expose port
 EXPOSE 3306
 
-
 # ===== Set entrypoint =====
 ENTRYPOINT ["/usr/local/bin/mariadb_installer.sh"]

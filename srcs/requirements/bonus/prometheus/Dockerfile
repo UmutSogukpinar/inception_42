@@ -2,7 +2,7 @@ FROM debian:bullseye
 
 # Install Prometheus and dependencies
 RUN apt-get update && \
-    apt-get install -y prometheus wget \
+    apt-get install -y --fix-missing prometheus wget \
     curl \
     && \
     rm -rf /var/lib/apt/lists/*

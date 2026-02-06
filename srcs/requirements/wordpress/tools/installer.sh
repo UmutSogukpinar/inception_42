@@ -19,8 +19,7 @@ else
     exit 1
 fi
 
-# Load Redis Password (CRITICAL FOR BONUS)
-# Docker Compose should map the secret to /run/secrets/redis_password
+# Load Redis Password
 REDIS_SECRET_FILE="/run/secrets/redis_password"
 
 if [ -f "$REDIS_SECRET_FILE" ]; then
@@ -54,15 +53,17 @@ echo "[INFO] Starting WordPress setup..."
 
 # ========== Runtime & Directory Setup ==========
 
-mkdir -p /run/php
-chown -R www-data:www-data /run/php
+PHP_RUN_DIR="/run/php"
+
+mkdir -p "$PHP_RUN_DIR"
+chown -R www-data:www-data "$PHP_RUN_DIR"
 chown -R www-data:www-data "$WP_PATH"
 
 ## ================== Config File Setup ==================
 
 if [ ! -f "$WP_PATH/wp-config.php" ]; then
     echo "[INFO] wp-config.php not found. Creating..."
-    
+
     wp config create \
       --dbname="$DB_NAME" \
       --dbuser="$DB_USER" \
@@ -78,11 +79,12 @@ fi
 # ========== Configure Redis Settings (Bonus) ==========
 
 WP_REDIS_PORT=6379
+WP_REDIS_HOST='redis'
 
 echo "[INFO] Configuring Redis in wp-config.php..."
 
 # Set Host (Container name)
-wp config set WP_REDIS_HOST 'redis' --allow-root --type=constant
+wp config set WP_REDIS_HOST "$WP_REDIS_HOST" --allow-root --type=constant
 
 # Set Port
 wp config set WP_REDIS_PORT "$WP_REDIS_PORT" --raw --allow-root --type=constant
@@ -95,7 +97,6 @@ wp config set WP_CACHE true --raw --allow-root --type=constant
 
 # Set Database Index
 wp config set WP_REDIS_DATABASE 0 --raw --allow-root --type=constant
-
 
 # ========== Wait for MariaDB ==========
 
@@ -115,7 +116,7 @@ WP_TITLE="WordPress Inception"
 
 if ! wp core is-installed --path="$WP_PATH" --allow-root; then
     echo "[INFO] WordPress tables are missing. Installing..."
-    
+
     wp core install \
       --url="https://$DOMAIN_NAME" \
       --title="$WP_TITLE" \
@@ -127,8 +128,8 @@ if ! wp core is-installed --path="$WP_PATH" --allow-root; then
       --allow-root
 
     echo "[INFO] Updating site options..."
-    wp option update blogdescription "Just another WordPress site" --path="$WP_PATH" --allow-root
-    
+    wp option update blog description "Just another WordPress site" --path="$WP_PATH" --allow-root
+
     echo "[SUCCESS] WordPress installation completed."
 else
     echo "[INFO] WordPress is already installed. Skipping installation."

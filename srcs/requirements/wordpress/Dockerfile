@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-# Install system packages (PHP 8.2)
+# Install system packages
 RUN apt-get update && \
     apt-get install -y --fix-missing --no-install-recommends \
         bash curl wget ca-certificates \

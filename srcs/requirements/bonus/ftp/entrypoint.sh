@@ -18,7 +18,9 @@ fi
 
 # ========== Check if FTP user exists ==========
 
-if id "$FTP_USER" >/dev/null 2>&1; then
+BLACK_HOLE="/dev/null"
+
+if id "$FTP_USER" > "$BLACK_HOLE" 2>&1; then
     echo "[INFO] FTP user '$FTP_USER' already exists. Skipping creation."
 else
     echo "[INFO] Creating FTP user: $FTP_USER"

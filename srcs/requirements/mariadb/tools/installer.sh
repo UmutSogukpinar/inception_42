@@ -25,6 +25,8 @@ echo "[INFO] MariaDB entrypoint starting..."
 
 prepare_init_file()
 {
+	echo "[INFO] Configuring database and users..."
+
 	init_file="/tmp/init.sql"
 
 	cat << EOF > "$init_file"
@@ -50,7 +52,6 @@ initialize_database()
 
 	mysqld > /dev/null 2>&1
 
-	echo "[INFO] Configuring database and users..."
 	prepare_init_file
 
 	echo "[SUCCESS] Configuration file created."

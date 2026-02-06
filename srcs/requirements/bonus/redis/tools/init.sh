@@ -34,7 +34,7 @@ if [ -f "$SECRET_FILE" ]; then
         exit 1
     fi
 else
-    echo "[ERROR] Redis password secret not found at $SECRET_FILE!"
+    echo "[ERROR] Redis password secret file not found at $SECRET_FILE!"
     exit 1
 fi
 

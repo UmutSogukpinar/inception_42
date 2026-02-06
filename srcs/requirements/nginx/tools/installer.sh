@@ -9,8 +9,8 @@ if [ ! -f "/etc/nginx/ssl/nginx.key" ] || [ ! -f "/etc/nginx/ssl/nginx.crt" ]; t
 
     # Use localhost if DOMAIN_NAME environment variable is not set
     if [ -z "$DOMAIN_NAME" ]; then
-        echo "[WARNING] DOMAIN_NAME variable not set. Defaulting to localhost."
-        DOMAIN_NAME="localhost"
+        echo "[ERROR] DOMAIN_NAME variable not set."
+        exit 1
     fi
 
     # Generate self-signed SSL certificate
