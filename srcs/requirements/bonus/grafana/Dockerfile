@@ -1,36 +1,38 @@
-FROM debian:bullseye
+FROM alpine:3.22
 
-# Install Dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk update && apk add --no-cache \
+    grafana \
     wget \
-    adduser \
-    libfontconfig1 \
-    && rm -rf /var/lib/apt/lists/*
+    bash \
+    ca-certificates
 
-# Download and Install Grafana directly (.deb package)
-RUN wget https://dl.grafana.com/oss/release/grafana_9.5.2_amd64.deb && \
-    dpkg -i grafana_9.5.2_amd64.deb && \
-    rm grafana_9.5.2_amd64.deb
 
-# Setup Provisioning Directory
-RUN mkdir -p /etc/grafana/provisioning/datasources
+RUN mkdir -p /etc/grafana/provisioning/datasources \
+             /var/lib/grafana \
+             /var/log/grafana
 
-# Copy Config Files
 COPY conf/datasource.yaml /etc/grafana/provisioning/datasources/datasource.yaml
+
+
+COPY conf/grafana.ini /etc/grafana/grafana.ini
+
+
 COPY tools/init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
 
-# Set Permissions
-RUN mkdir -p /var/lib/grafana && \
-    chown -R grafana:grafana /var/lib/grafana /etc/grafana
 
-# Set Environment Variables for Grafana Paths
+RUN chown -R grafana:grafana /var/lib/grafana \
+                             /var/log/grafana \
+                             /etc/grafana \
+                             /usr/share/grafana
+
+ENV GF_PATHS_CONFIG=/etc/grafana/grafana.ini
+ENV GF_PATHS_DATA=/var/lib/grafana
+ENV GF_PATHS_LOGS=/var/log/grafana
 ENV GF_PATHS_PROVISIONING=/etc/grafana/provisioning
 
-# Expose Port
 EXPOSE 3000
 
-# Run as user grafana
 USER grafana
 WORKDIR /usr/share/grafana
 

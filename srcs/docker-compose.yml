@@ -30,7 +30,7 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -62,7 +62,7 @@ services:
 
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -102,7 +102,7 @@ services:
 
     healthcheck:
       test: ["CMD", "sh", "-c", "[ -f /var/www/html/wp-config.php ]"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -126,7 +126,7 @@ services:
 
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -181,7 +181,7 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 21"]
-      interval: 10s
+      interval: 30s
       timeout: 3s
       retries: 5
       start_period: 10s
@@ -218,7 +218,7 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:9090/-/healthy || exit 1"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
