@@ -7,7 +7,7 @@ set -e
 USER_NAME="umut"
 DATA_DIR="/home/$USER_NAME/data"
 # List of services that need persistence
-SERVICES=("mariadb" "wordpress" "redis" "prometheus" "grafana")
+SERVICES=("mariadb" "wordpress" "redis" "portainer")
 
 # ================== Functions ==================
 

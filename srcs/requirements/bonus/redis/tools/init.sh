@@ -2,6 +2,8 @@
 
 set -e
 
+echo "[INFO] Starting Redis..."
+
 # ========== Variables ==========
 
 CONF_FILE="/etc/redis/redis.conf"
@@ -9,36 +11,21 @@ SECRET_FILE="/run/secrets/redis_password"
 
 echo "[INFO] Configuring Redis..."
 
-# ========== Clean old config lines ==========
-
-# Remove existing bind, requirepass, and protected-mode lines to prevent duplicates
-sed -i '/^bind/d' "$CONF_FILE"
-sed -i '/^requirepass/d' "$CONF_FILE"
-sed -i '/^protected-mode/d' "$CONF_FILE"
-
-# ========== Append new settings ==========
-
-echo "" >> "$CONF_FILE"
-echo "bind 0.0.0.0" >> "$CONF_FILE"           # Allow connections from any IP
-echo "protected-mode no" >> "$CONF_FILE"      # Disable protected mode (password enforced)
-
 # ========== Load password from secret ==========
 
 if [ -f "$SECRET_FILE" ]; then
     REDIS_PASSWORD=$(cat "$SECRET_FILE")
-    if [ -n "$REDIS_PASSWORD" ]; then
-        echo "requirepass $REDIS_PASSWORD" >> "$CONF_FILE"
-        echo "[INFO] Password set successfully from secret."
-    else
+    
+    if [ -z "$REDIS_PASSWORD" ]; then
         echo "[ERROR] Secret file is empty!"
         exit 1
     fi
+    echo "[INFO] Password found. Starting with password protection."
 else
-    echo "[ERROR] Redis password secret file not found at $SECRET_FILE!"
+    echo "[ERROR] No password secret file found!"
     exit 1
 fi
 
-# ========== Start Redis server ==========
+# ================== Start Redis Server ==================
 
-echo "[INFO] Starting Redis Server..."
-exec redis-server "$CONF_FILE"
+exec redis-server "$CONF_FILE" --requirepass "$REDIS_PASSWORD"

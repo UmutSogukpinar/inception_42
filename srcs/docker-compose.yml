@@ -16,7 +16,7 @@ services:
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
-      - "443:443"
+      - "${NGINX_PORT}:443"
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -54,8 +54,6 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - inception
-    expose:
-      - "3306"
     secrets:
       - db_root_password
       - db_password
@@ -116,7 +114,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     secrets:
       - redis_password
     networks:
@@ -182,7 +180,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 21"]
       interval: 30s
-      timeout: 3s
+      timeout: 5s
       retries: 5
       start_period: 10s
 
@@ -201,50 +199,28 @@ services:
       - inception
 
   # ===========================================
-  #             Prometheus Service
+  #               Portainer Service
   # ===========================================
 
-  prometheus:
-    build: ./requirements/bonus/prometheus
-    image: inception/prometheus:inception
-    container_name: prometheus
+  portainer:
+    build: ./requirements/bonus/portainer
+    image: inception/portainer:inception
+    container_name: portainer
     restart: always
     ports:
-      - "9090:9090"
+      - "${PORTAINER_PORT}:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
     networks:
       - inception
-    volumes:
-      - prometheus_data:/var/lib/prometheus
 
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:9090/-/healthy || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
-
-  # ===========================================
-  #               Grafana Service
-  # ===========================================
-
-  grafana:
-    build: ./requirements/bonus/grafana
-    image: inception/grafana:inception
-    container_name: grafana
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-    secrets:
-      - grafana_admin_password
-    networks:
-      - inception
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana
-
+    # healthcheck:
+    #   test: ["executable", "arg"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 10s
 
 # ===========================================
 #                  Volumes             
@@ -280,19 +256,12 @@ volumes:
       o: bind
       device: ${DATA_DIR}/hugo
 
-  prometheus_data:
+  portainer_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${DATA_DIR}/prometheus
-
-  grafana_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_DIR}/grafana
+      device: ${DATA_DIR}/portainer
 
 
 # ===========================================
@@ -319,5 +288,3 @@ secrets:
     file: ../secrets/ftp_password_bonus.txt
   redis_password:
     file: ../secrets/redis_password_bonus.txt
-  grafana_admin_password:
-    file: ../secrets/grafana_admin_password_bonus.txt
