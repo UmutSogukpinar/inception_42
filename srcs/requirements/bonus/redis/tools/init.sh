@@ -20,6 +20,7 @@ if [ -f "$SECRET_FILE" ]; then
         echo "[ERROR] Secret file is empty!"
         exit 1
     fi
+
     echo "[INFO] Password found. Starting with password protection."
 else
     echo "[ERROR] No password secret file found!"

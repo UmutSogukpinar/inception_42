@@ -21,7 +21,9 @@ RUN curl -L \
     && rm -rf portainer.tar.gz portainer
 
 # Docker Compose Installation
-RUN curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose \
+RUN curl -L \
+        https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 \
+        -o /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose
 
 # Configurations

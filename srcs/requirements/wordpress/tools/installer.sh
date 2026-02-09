@@ -7,6 +7,12 @@ echo "[INFO] Loading secrets and environment variables..."
 
 WP_PATH="/var/www/html"
 
+DOMAIN_NAME=${DOMAIN_NAME}
+
+WP_TITLE=${WORDPRESS_TITLE}
+WP_ADMIN_USER=$WORDPRESS_ADMIN_USER
+WP_ADMIN_EMAIL=$WORDPRESS_ADMIN_EMAIL
+
 DB_HOST=$WORDPRESS_DB_HOST
 DB_NAME=$WORDPRESS_DB_NAME
 DB_USER=$WORDPRESS_DB_USER
@@ -15,7 +21,7 @@ DB_USER=$WORDPRESS_DB_USER
 if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
     DB_PASSWORD=$(cat "$WORDPRESS_DB_PASSWORD_FILE")
 else
-    echo "[ERROR] Database password secret not found!"
+    echo "[ERROR] Database password secret file not found!"
     exit 1
 fi
 
@@ -26,15 +32,13 @@ if [ -f "$REDIS_SECRET_FILE" ]; then
     REDIS_PASSWORD=$(cat "$REDIS_SECRET_FILE")
 else
     echo "[ERROR] Redis password secret not found at $REDIS_SECRET_FILE"
-    echo "       Make sure you added 'secrets: - redis_password' to wordpress service in docker-compose.yml"
+    echo "Make sure you added 'secrets: - redis_password' to wordpress service in docker-compose.yml"
     exit 1
 fi
 
 # Load WP Admin Credentials
 if [ -f "$WP_CREDENTIALS_FILE" ]; then
-    WP_ADMIN_USER=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
-    WP_ADMIN_EMAIL=$(sed -n '2p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
-    WP_ADMIN_PASSWORD=$(sed -n '3p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+    # WP_ADMIN_PASSWORD=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
 else
     echo "[ERROR] Credentials file not found!"
     exit 1
@@ -42,11 +46,19 @@ fi
 
 # ================== Validate Required Values ====================
 
-[ -z "$DB_HOST" ] && echo "[ERROR] DB_HOST not set" && exit 1
-[ -z "$DB_NAME" ] && echo "[ERROR] DB_NAME not set" && exit 1
-[ -z "$DB_USER" ] && echo "[ERROR] DB_USER not set" && exit 1
-[ -z "$DB_PASSWORD" ] && echo "[ERROR] DB_PASSWORD empty" && exit 1
-[ -z "$REDIS_PASSWORD" ] && echo "[ERROR] REDIS_PASSWORD empty" && exit 1
+[ -z "$DOMAIN_NAME" ] && echo "[ERROR] DOMAIN_NAME not set!" && exit 1
+
+[ -z "$WP_TITLE" ] && echo "[ERROR] WP_TITLE not set!" && exit 1
+[ -z "$WP_ADMIN_USER" ] && echo "[ERROR] WP_ADMIN_USER not set!" && exit 1
+[ -z "$WP_ADMIN_EMAIL" ] && echo "[ERROR] WP_ADMIN_EMAIL not set!" && exit 1
+
+[ -z "$DB_HOST" ] && echo "[ERROR] DB_HOST not set!" && exit 1
+[ -z "$DB_NAME" ] && echo "[ERROR] DB_NAME not set!" && exit 1
+[ -z "$DB_USER" ] && echo "[ERROR] DB_USER not set!" && exit 1
+
+[ -z "$DB_PASSWORD" ] && echo "[ERROR] DB_PASSWORD empty!" && exit 1
+[ -z "$WP_ADMIN_PASSWORD" ] && echo "[ERROR] WP_ADMIN_PASSWORD empty!" && exit 1
+[ -z "$REDIS_PASSWORD" ] && echo "[ERROR] REDIS_PASSWORD empty!" && exit 1
 
 echo "[INFO] All variables loaded successfully."
 echo "[INFO] Starting WordPress setup..."
@@ -78,8 +90,11 @@ fi
 
 # ========== Configure Redis Settings (Bonus) ==========
 
-WP_REDIS_PORT=6379
-WP_REDIS_HOST='redis'
+WP_REDIS_PORT=${REDIS_PORT}
+WP_REDIS_HOST=${REDIS_HOST}
+
+[ -z "$WP_REDIS_PORT" ] && echo "[ERROR] WP_REDIS_PORT empty" && exit 1
+[ -z "$WP_REDIS_HOST" ] && echo "[ERROR] WP_REDIS_HOST empty" && exit 1
 
 echo "[INFO] Configuring Redis in wp-config.php..."
 
@@ -112,7 +127,6 @@ echo "[SUCCESS] Connected to MariaDB."
 
 # ================== WordPress Installation Check ==================
 
-WP_TITLE="WordPress Inception"
 
 if ! wp core is-installed --path="$WP_PATH" --allow-root; then
     echo "[INFO] WordPress tables are missing. Installing..."

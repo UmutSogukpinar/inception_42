@@ -76,11 +76,19 @@ services:
 
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
-      - WORDPRESS_DB_HOST=mariadb
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_NAME=${DB_NAME}
-      - WORDPRESS_DB_USER=wp_user
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_TITLE=${WORDPRESS_TITLE}
+
+      - WORDPRESS_ADMIN_USER=${WP_ADMIN}
+      - WORDPRESS_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
+    
       - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
       - WP_CREDENTIALS_FILE=/run/secrets/wp_admin_user
+
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
 
     volumes:
       - wordpress_data:/var/www/html

@@ -1,6 +1,6 @@
 NAME          = inception
 DOCKER_COMPOSE = docker compose -f ./srcs/docker-compose.yml
-# Use the current user's home to make it portable
+
 DATA_DIR      = $(HOME)/data
 
 # Colors
@@ -26,17 +26,4 @@ down:
 	@$(DOCKER_COMPOSE) down
 	@echo "$(GREEN)[OK]$(RESET) Containers stopped."
 
-clean:
-	@echo "$(YELLOW)[INFO]$(RESET) Removing containers and project volumes..."
-	@$(DOCKER_COMPOSE) down -v
-	@echo "$(GREEN)[OK]$(RESET) Project volumes deleted."
-
-fclean: clean
-	@echo "$(RED)[WARN]$(RESET) Executing deep clean..."
-	@sudo bash ./tools/util.sh --clear
-	@docker system prune -af
-	@echo "$(GREEN)[OK]$(RESET) Entire environment wiped."
-
-re: fclean all
-
-.PHONY: all init up down clean fclean re
+.PHONY: all init up down

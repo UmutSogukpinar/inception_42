@@ -8,12 +8,18 @@ FTP_USER=${FTP_USER}
 
 # ========== Load FTP Password ==========
 
-# Prefer Docker secret, fallback to env var or default
 if [ -f "/run/secrets/ftp_password" ]; then
     FTP_PASSWORD=$(cat /run/secrets/ftp_password)
+
+    if [ -z ${FTP_PASSWORD} ]; then
+        echo "[ERROR] Ftp password cannot be empty!"
+        exit 1
+    fi
+
+    echo "[INFO] Password found. Starting with password protection."
 else
-    FTP_PASSWORD=${FTP_PASSWORD:-"admin123"}
-    echo "[WARNING] Secret not found, using Environment/Default password."
+    echo "[ERROR] Secret file not found!"
+    exit 1
 fi
 
 # ========== Check if FTP user exists ==========
@@ -27,7 +33,6 @@ else
     
     # ========== Add user ==========
 
-    # -D disables password prompt, -h sets home directory
     adduser -D -h /var/www/html "$FTP_USER"
     
     # Set password
@@ -41,5 +46,6 @@ else
 fi
 
 # ========== Start vsftpd ==========
+
 echo "[INFO] Starting vsftpd..."
 exec /usr/sbin/vsftpd /etc/vsftpd.conf

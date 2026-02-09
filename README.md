@@ -64,9 +64,9 @@ communicate through a private Docker network. Only the necessary ports are expos
 │   /        → WordPress                                   │
 │   /hugo/   → Hugo                                        │
 └───────────────┬───────────────────────────┬──────────────┘
-                │                       │
-        FastCGI │                       │ HTTP
-                ▼                       ▼
+                │                           │
+        FastCGI │                           │ HTTP
+                ▼                           ▼
 ┌────────────────────────────┐   ┌──────────────────────┐
 │ WordPress / PHP-FPM        │   │                      │
 │                            │   │    Static Website    │
