@@ -19,11 +19,24 @@ init:
 up: init
 	@echo "$(BLUE)[INFO]$(RESET) Building and starting containers..."
 	@$(DOCKER_COMPOSE) up -d --build
-	@echo "$(GREEN)[SUCCESS]$(RESET) Service is running at https:usogukpi.42.fr"
+	@echo "$(GREEN)[SUCCESS]$(RESET) Service is running at https://usogukpi.42.fr"
 
 down:
 	@echo "$(YELLOW)[INFO]$(RESET) Stopping containers..."
 	@$(DOCKER_COMPOSE) down
 	@echo "$(GREEN)[OK]$(RESET) Containers stopped."
 
-.PHONY: all init up down
+clean: down
+	@echo "$(YELLOW)[INFO]$(RESET) Removing containers and volumes..."
+	@$(DOCKER_COMPOSE) down -v
+	@echo "$(GREEN)[OK]$(RESET) Volumes removed."
+
+fclean: clean
+	@echo "$(RED)[INFO]$(RESET) Full cleanup: images + data directory"
+	@docker image prune -af
+	@sudo rm -rf $(DATA_DIR)
+	@echo "$(GREEN)[OK]$(RESET) Full clean done."
+
+re: fclean all
+
+.PHONY: all init up down clean fclean re

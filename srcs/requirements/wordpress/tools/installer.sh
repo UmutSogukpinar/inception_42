@@ -37,10 +37,10 @@ else
 fi
 
 # Load WP Admin Credentials
-if [ -f "$WP_CREDENTIALS_FILE" ]; then
-    # WP_ADMIN_PASSWORD=$(sed -n '1p' "$WP_CREDENTIALS_FILE" | tr -d '\r\n')
+if [ -f "$WORDPRESS_ADMIN_PASSWORD_FILE" ]; then
+    WP_ADMIN_PASSWORD=$(cat "$WORDPRESS_ADMIN_PASSWORD_FILE")
 else
-    echo "[ERROR] Credentials file not found!"
+    echo "[ERROR] WORDPRESS_ADMIN_PASSWORD_FILE not found!"
     exit 1
 fi
 
