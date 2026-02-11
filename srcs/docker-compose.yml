@@ -46,7 +46,7 @@ services:
 
     environment:
       - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_USER=wp_user
+      - MYSQL_USER=${DB_USER_NAME}
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
 

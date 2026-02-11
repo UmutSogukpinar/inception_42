@@ -28,6 +28,17 @@ init()
         exit 1
     fi
 
+
+    if [ ! -d "$DATA_DIR" ]; then
+        mkdir -p "$DATA_DIR" || {
+            error "Failed to create $DATA_DIR"
+            exit 1
+        }
+        success "Created base directory: $DATA_DIR"
+    else
+        log "Base directory exists: $DATA_DIR"
+    fi
+
     for service in "${SERVICES[@]}"; do
         target="$DATA_DIR/$service"
         if [ ! -d "$target" ]; then

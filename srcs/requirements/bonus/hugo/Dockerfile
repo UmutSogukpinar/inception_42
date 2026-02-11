@@ -8,7 +8,7 @@ RUN apk update && apk add --no-cache \
     bash
 
 # Copy Hugo initialization script into the container
-COPY init.sh /hugo_setup.sh
+COPY content/content.sh /hugo_setup.sh
 
 # Ensure the initialization script is executable
 RUN chmod +x /hugo_setup.sh

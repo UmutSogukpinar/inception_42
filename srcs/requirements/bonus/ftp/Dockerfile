@@ -18,7 +18,7 @@ RUN mkdir -p /var/run/vsftpd/empty
 COPY conf/vsftpd.conf /etc/vsftpd.conf
 
 # Copy and make entrypoint script executable
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose FTP ports
