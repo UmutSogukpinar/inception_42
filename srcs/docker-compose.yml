@@ -252,13 +252,6 @@ volumes:
       type: none
       o: bind
       device: ${DATA_DIR}/redis
-  
-  hugo:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_DIR}/hugo
 
   portainer_data:
     driver: local
