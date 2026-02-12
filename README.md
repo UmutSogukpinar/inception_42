@@ -49,6 +49,9 @@ make --version
 ### 🌐 Accessing the Services
 - WordPress website: `https://usogukpi.42.fr`
 - WordPress admin panel: `https://usogukpi.42.fr/wp-admin`
+- Adminer: `https://usogukpi.42.fr/adminer`
+- Portainer: `https://usogukpi.42.fr:9443`
+- Hugo Static Website: `https://usogukpi.42.fr/hugo`
 
 ### 🛑 Stopping the Services
 ```bash
@@ -58,50 +61,6 @@ make down
 ### 🧹 Cleaning Up
 ```bash
 make fclean
-```
-
-## Project Structure
-
-```
-.
-├── Makefile
-├── secrets/
-│   ├── credentials.txt
-│   ├── db_password.txt
-│   ├── db_root_password.txt
-│   └── ftp_password.txt
-└── srcs/
-    ├── docker-compose.yml
-    ├── .env
-    └── requirements/
-        ├── bonus/
-        │   ├── adminer/
-        │   │   └── Dockerfile
-        │   ├── ftp/
-        │   │   ├── Dockerfile
-        │   │   ├── conf/
-        │   │   └── tools/
-        │   ├── portainer/
-        │   │   └── Dockerfile
-        │   ├── redis/
-        │   │   ├── Dockerfile
-        │   │   ├── tools/
-        │   │   └── conf/
-        │   └── hugo/
-        │       ├── Dockerfile
-        │       └── content/
-        ├── mariadb/
-        │   ├── Dockerfile
-        │   ├── conf/
-        │   └── tools/
-        ├── nginx/
-        │   ├── Dockerfile
-        │   ├── conf/
-        │   └── tools/
-        └── wordpress/
-            ├── Dockerfile
-            ├── conf/
-            └── tools/
 ```
 
 ## 🔬 Project Description
@@ -160,50 +119,6 @@ This project implements a microservices architecture using Docker containers. Ea
 
 Both volumes are stored in `/home/login/data` on the host for easy access and backup.
 
-### 🎯 Design Choices
-
-1. **Base Images**: Using Alpine Linux (penultimate stable version) for minimal attack surface and smaller image sizes
-2. **TLS Security**: NGINX configured with TLSv1.2/1.3 only, ensuring modern encryption standards
-3. **Process Management**: Each container runs a single process (no `tail -f` hacks), following Docker best practices
-4. **Restart Policy**: Containers configured to restart on failure, ensuring high availability
-5. **No Latest Tags**: All images use specific version tags for reproducibility
-
-### ✨ Bonus Services
-
-In addition to the mandatory services, the following bonus features have been implemented:
-
-* **Redis Cache**
-   - In-memory caching for WordPress
-   - Significantly improves page load times
-   - Reduces database queries
-   - Accessible at: `redis:6379`
-
-* **FTP Server (vsftpd)**
-   - Provides FTP access to WordPress files
-   - Enables easy file management
-   - Port: 21 (control), 21000-21010 (passive mode)
-   - Access: `ftp://usogukpi.42.fr`
-
-* **Static Website (Hugo)**
-  - **Purpose:** Personal portfolio / resume website  
-  - **Technology:** Built with **Hugo** (static site generator) using HTML/CSS/JavaScript  
-  - **Architecture:** Generates static files served directly by NGINX  
-  - **Objective:** Demonstrates modern static site generation, content structuring, and clean design principles  
-  - **Access URL:** `https://usogukpi.42.fr/hugo`
-
-* **Adminer**
-   - Web-based database management tool
-   - Lightweight alternative to phpMyAdmin
-   - Direct database access and query execution
-   - Accessible at: `https://usogukpi.42.fr/adminer`
-
-* **Portainer**
-   - Docker container management UI
-   - Visual monitoring and management of all containers
-   - Resource usage statistics and logs
-   - Accessible at: `https://usogukpi.42.fr:9443`
-   - Provides GUI for Docker administration
-
 ## 📚 Resources
 
 ### Docker Documentation
@@ -222,12 +137,19 @@ In addition to the mandatory services, the following bonus features have been im
 - [Docker Networks Deep Dive](https://docs.docker.com/network/)
 - [Docker Volumes Guide](https://docs.docker.com/storage/volumes/)
 
-### AI Usage
+## 🤖 AI Usage
 
-AI tools were used in this project for:
-- **Research and Documentation**: Understanding Docker Compose syntax, NGINX configuration options, and SSL/TLS setup
+AI tools were used in this project for the following purposes:
 
-- **Debugging**: Troubleshooting container startup issues and network connectivity problems
+- **Research and Documentation**  
+  Understanding Docker Compose syntax, NGINX configuration options, SSL/TLS setup, and overall container architecture design.
+
+- **Debugging**  
+  Troubleshooting container startup issues, volume permission errors, network connectivity problems, and service communication between containers.
+
+- **README & Markdown Syntax Assistance**  
+  Structuring the project documentation, improving clarity and formatting,  
+  and receiving assistance with proper **Markdown syntax** (headings, tables, code blocks, formatting best practices).
 
 
 All AI-generated content was reviewed, tested, and modified to meet project requirements. The core logic and architecture decisions were made independently.

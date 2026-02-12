@@ -10,7 +10,7 @@ This document explains how to use and manage the Inception infrastructure as an 
 4. [Managing Credentials](#managing-credentials)
 5. [Verifying Services](#verifying-services)
 6. [Common Tasks](#common-tasks)
-7. [Troubleshooting](#troubleshooting)
+7. [Quick Reference](#quick-reference)
 
 ## Overview
 
@@ -50,7 +50,6 @@ The Inception infrastructure provides a complete WordPress hosting environment w
   - Built with **Hugo** static site generator
   - Personal resume website
   - Runs as a separate container from WordPress
-  - Exposed via **NGINX reverse proxy** under `/hugo`
 
 - **Adminer**
   - Web-based database management interface
@@ -283,17 +282,17 @@ Adminer is a lightweight database management interface used to manage the MariaD
 **URL:** `https://usogukpi.42.fr/adminer`
 
 **Connection Details:**
-- Username: Located in `srcs/.env` as `DB_USER_NAME=blabla`
-- Password: Located in `secrets/db_password.txt`
-- Root Password: Located in `secrets/db_root_password.txt`
+- Username: Located in **srcs/.env** as `DB_USER_NAME=blabla`
+- Password: Located in **secrets/db_password.txt**
+- Root Password: Located in **secrets/db_root_password.txt**
 
 
 **Login Details:**
-- System: `MySQL`
-- Server: `mariadb`
-- Username: `root` or `wp_user`
-- Password: From `/secrets/db_root_password.txt` or `/secrets/db_password.txt`
-- Database: `wordpress`
+- System: *MySQL*
+- Server: *mariadb*
+- Username: `root` or `wp_user` from **.env** file
+- Password: From **/secrets/db_root_password.txt** or **/secrets/db_password.txt**
+- Database: *wordpress*
 
 **Features:**
 - Browse database tables
@@ -332,7 +331,7 @@ Portainer is a web-based Docker management interface.
 
 ### Location
 
-All credentials are stored in the `secrets/` directory:
+All credentials are stored in the **secrets/** directory and **srcs/.env** file:
 
 ```
 secrets/
@@ -353,6 +352,9 @@ cat secrets/credentials.txt
 
 # Database credentials
 cat secrets/db_password.txt
+
+# View environment variables
+cat srcs/.env
 ```
 
 ### Security Best Practices
@@ -528,256 +530,6 @@ du -sh /home/usogukpi/data/*
 docker ps -s
 ```
 
-### Backing Up Data
-
-**Database backup:**
-```bash
-# Create backup directory
-mkdir -p backups
-
-# Export database
-docker exec mariadb mysqldump -u root -p$(cat secrets/db_root_password.txt) wordpress > backups/wordpress_$(date +%Y%m%d).sql
-```
-
-**WordPress files backup:**
-```bash
-# Backup WordPress files
-tar -czf backups/wordpress_files_$(date +%Y%m%d).tar.gz /home/your-login/data/wordpress
-```
-
-### Restoring from Backup
-
-**Restore database:**
-```bash
-docker exec -i mariadb mysql -u root -p$(cat secrets/db_root_password.txt) wordpress < backups/wordpress_20240211.sql
-```
-
-**Restore WordPress files:**
-```bash
-tar -xzf backups/wordpress_files_20240211.tar.gz -C /
-```
-
-## Troubleshooting
-
-### Services Won't Start
-
-**Problem:** Containers exit immediately
-
-**Solution:**
-```bash
-# Check logs
-docker-compose -f srcs/docker-compose.yml logs
-
-# Common issues:
-# 1. Port 443 already in use
-sudo lsof -i :443
-
-# 2. Invalid configuration
-docker-compose -f srcs/docker-compose.yml config
-
-# 3. Permission issues
-sudo chown -R $USER:$USER /home/$USER/data
-```
-
-### Cannot Access Website
-
-**Problem:** Browser shows "Connection refused"
-
-**Solution:**
-1. Verify NGINX is running:
-   ```bash
-   docker ps | grep nginx
-   ```
-
-2. Check if port 443 is open:
-   ```bash
-   sudo netstat -tlnp | grep 443
-   ```
-
-3. Verify domain configuration:
-   ```bash
-   cat /etc/hosts | grep 42.fr
-   ```
-
-### Database Connection Errors
-
-**Problem:** WordPress shows "Error establishing database connection"
-
-**Solution:**
-1. Verify MariaDB is running:
-   ```bash
-   docker logs mariadb
-   ```
-
-2. Test database connectivity:
-   ```bash
-   docker exec -it mariadb mysql -u wordpress -p$(cat secrets/db_password.txt) -e "SHOW DATABASES;"
-   ```
-
-3. Restart services:
-   ```bash
-   make down
-   make
-   ```
-
-### SSL Certificate Warnings
-
-**Problem:** Browser shows security warning
-
-**Solution:**
-This is expected with self-signed certificates in development. Options:
-
-1. **Accept the warning** (recommended for development)
-   - Click "Advanced" → "Proceed"
-
-2. **Add certificate to browser** (optional)
-   - Export certificate from browser
-   - Add to trusted certificates
-
-### Performance Issues
-
-**Problem:** Website loads slowly
-
-**Solution:**
-1. Check container resource usage:
-   ```bash
-   docker stats
-   ```
-
-2. Verify volume performance:
-   ```bash
-   df -h /home/$USER/data
-   ```
-
-3. Check WordPress performance:
-   - Install caching plugin
-   - Optimize database
-   - Review installed plugins
-
-### Data Loss After Restart
-
-**Problem:** Content disappears after `make down`
-
-**Solution:**
-- Use `make down` instead of `make fclean`
-- Verify volumes exist:
-  ```bash
-  docker volume ls
-  ls -la /home/$USER/data/
-  ```
-
-### Bonus Services Issues
-
-#### Redis Not Working
-
-**Problem:** WordPress not using cache
-
-**Solution:**
-```bash
-# Check Redis is running
-docker exec redis redis-cli ping
-
-# Check WordPress Redis plugin
-docker exec wordpress wp plugin list --allow-root
-
-# Test Redis connection from WordPress
-docker exec wordpress redis-cli -h redis ping
-```
-
-#### Cannot Connect to FTP
-
-**Problem:** FTP connection refused
-
-**Solution:**
-```bash
-# Check FTP server is running
-docker logs ftp
-
-# Verify port 21 is open
-sudo netstat -tlnp | grep 21
-
-# Test with command line
-ftp your-login.42.fr
-
-# Check passive ports are accessible
-sudo netstat -tlnp | grep "21000\|21010"
-```
-
-#### Adminer Not Loading
-
-**Problem:** 404 error on /adminer
-
-**Solution:**
-```bash
-# Check Adminer container
-docker logs adminer
-
-# Verify NGINX proxy configuration
-docker exec nginx cat /etc/nginx/nginx.conf | grep adminer
-
-# Restart Adminer
-docker restart adminer
-```
-
-#### Portainer Won't Start
-
-**Problem:** Cannot access Portainer on port 9443
-
-**Solution:**
-```bash
-# Check Portainer logs
-docker logs portainer
-
-# Verify port is not in use
-sudo netstat -tlnp | grep 9443
-
-# Check volume permissions
-ls -la /home/$USER/data/portainer
-
-# Restart Portainer
-docker restart portainer
-```
-
-#### Static Website Not Displaying
-
-**Problem:** 404 on portfolio page
-
-**Solution:**
-```bash
-# Check website container
-docker logs website
-
-# Verify NGINX configuration
-docker exec nginx cat /etc/nginx/nginx.conf | grep portfolio
-
-# Check file permissions
-docker exec website ls -la /var/www/html
-```
-
-## Getting Help
-
-If you encounter issues not covered here:
-
-1. Check container logs: `docker logs <container-name>`
-2. Review Docker Compose configuration: `docker-compose config`
-3. Consult the DEV_DOC.md for technical details
-4. Check the main README.md for resources and documentation links
-
-## Maintenance Schedule
-
-### Daily
-- Monitor container status: `docker ps`
-- Check disk usage: `df -h`
-
-### Weekly
-- Review logs for errors: `docker-compose logs`
-- Backup database and files
-
-### Monthly
-- Update WordPress core and plugins
-- Review security settings
-- Clean up old backups
-
 ## Quick Reference
 
 ### Main Services
@@ -791,7 +543,6 @@ If you encounter issues not covered here:
 | Check status | `docker ps` |
 | Access website | `https://usogukpi.42.fr` |
 | Admin panel | `https://usogukpi.42.fr/wp-admin` |
-| Backup database | `docker exec mariadb mysqldump...` |
 | Clean everything | `make fclean` ⚠️ |
 
 ### Bonus Services

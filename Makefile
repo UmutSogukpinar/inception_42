@@ -34,7 +34,7 @@ clean: down
 fclean: clean
 	@echo "$(RED)[INFO]$(RESET) Full cleanup: images + data directory"
 	@docker image prune -af
-	@sudo rm -rf $(DATA_DIR)
+	@rm -rf $(DATA_DIR)
 	@echo "$(GREEN)[OK]$(RESET) Full clean done."
 
 re: fclean all
