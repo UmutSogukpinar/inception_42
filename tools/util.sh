@@ -4,8 +4,8 @@ set -euo pipefail
 
 # ================== Variables ==================
 
-USER_NAME="usogukpi"
-DATA_DIR="/home/$USER_NAME/data"
+USER_NAME="umut"
+DATA_DIR="/${HOME}/data"
 SERVICES=("mariadb" "wordpress" "redis" "portainer")
 
 # ================== Functions ==================

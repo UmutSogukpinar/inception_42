@@ -27,6 +27,8 @@ services:
         condition: service_healthy
       hugo:
         condition: service_started
+      adminer:
+        condition: service_healthy
 
     healthcheck:
       test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
@@ -121,8 +123,6 @@ services:
     image: inception/redis:inception
     container_name: redis
     restart: always
-    ports:
-      - "${REDIS_PORT}:6379"
     secrets:
       - redis_password
     networks:
@@ -145,8 +145,6 @@ services:
     image: inception/adminer:inception
     container_name: adminer
     restart: always
-    ports:
-      - "8080:8080"
     depends_on:
       - mariadb
     networks:
@@ -215,8 +213,6 @@ services:
     image: inception/portainer:inception
     container_name: portainer
     restart: always
-    ports:
-      - "${PORTAINER_PORT}:9443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data

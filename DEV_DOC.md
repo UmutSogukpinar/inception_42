@@ -357,7 +357,7 @@ ls -ld /home/$USER/data/*
 
 The project uses a custom bridge network for container communication.
 
-**Network name:** `inception-network`
+**Network name:** `inception`
 **Driver:** bridge
 **Scope:** local
 

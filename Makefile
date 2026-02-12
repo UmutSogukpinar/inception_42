@@ -32,10 +32,12 @@ clean: down
 	@echo "$(GREEN)[OK]$(RESET) Volumes removed."
 
 fclean: clean
-	@echo "$(RED)[INFO]$(RESET) Full cleanup: images + data directory"
-	@docker image prune -af
-	@rm -rf $(DATA_DIR)
+	@echo "$(RED)[INFO]$(RESET) Full cleanup: compose images + build cache + data directory"
+	@$(DOCKER_COMPOSE) down -v --rmi all --remove-orphans
+	@docker builder prune -af
+	@sudo rm -rf "$(DATA_DIR)"
 	@echo "$(GREEN)[OK]$(RESET) Full clean done."
+
 
 re: fclean all
 
