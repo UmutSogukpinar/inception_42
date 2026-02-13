@@ -6,6 +6,7 @@ set -e
 echo "[INFO] Loading secrets and environment variables..."
 
 WP_PATH="/var/www/html"
+BLACK_HOLE="/dev/null"
 
 DOMAIN_NAME=${DOMAIN_NAME}
 
@@ -92,6 +93,8 @@ fi
 
 WP_REDIS_PORT=${REDIS_PORT}
 WP_REDIS_HOST=${REDIS_HOST}
+WP_CACHE="true"
+WP_REDIS_DATABASE=0
 
 [ -z "$WP_REDIS_PORT" ] && echo "[ERROR] WP_REDIS_PORT empty" && exit 1
 [ -z "$WP_REDIS_HOST" ] && echo "[ERROR] WP_REDIS_HOST empty" && exit 1
@@ -99,23 +102,22 @@ WP_REDIS_HOST=${REDIS_HOST}
 echo "[INFO] Configuring Redis in wp-config.php..."
 
 # Set Host (Container name)
-wp config set WP_REDIS_HOST "$WP_REDIS_HOST" --allow-root --type=constant
+wp config set WP_REDIS_HOST "$WP_REDIS_HOST" --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # Set Port
-wp config set WP_REDIS_PORT "$WP_REDIS_PORT" --raw --allow-root --type=constant
+wp config set WP_REDIS_PORT "$WP_REDIS_PORT" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # Set Password
-wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant
+wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # Enable Cache
-wp config set WP_CACHE true --raw --allow-root --type=constant
+wp config set WP_CACHE "$WP_CACHE" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # Set Database Index
-wp config set WP_REDIS_DATABASE 0 --raw --allow-root --type=constant
+wp config set WP_REDIS_DATABASE "$WP_REDIS_DATABASE" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # ========== Wait for MariaDB ==========
 
-BLACK_HOLE="/dev/null"
 
 echo "[INFO] Waiting for MariaDB connection..."
 until wp db check --path="$WP_PATH" --allow-root > "$BLACK_HOLE" 2>&1; do
