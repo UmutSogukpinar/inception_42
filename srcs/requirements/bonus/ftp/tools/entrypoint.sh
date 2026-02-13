@@ -2,25 +2,21 @@
 
 set -e
 
-# ===== Load FTP User =====
-
-FTP_USER=${FTP_USER}
-
 # ========== Load FTP Password ==========
 
-if [ -f "/run/secrets/ftp_password" ]; then
-    FTP_PASSWORD=$(cat /run/secrets/ftp_password)
-
-    if [ -z ${FTP_PASSWORD} ]; then
-        echo "[ERROR] Ftp password cannot be empty!"
-        exit 1
-    fi
-
-    echo "[INFO] Password found. Starting with password protection."
-else
-    echo "[ERROR] Secret file not found!"
+if [ ! -r "$SECRET_FILE" ] || [ ! -f "$SECRET_FILE" ]; then
+    echo "[ERROR] Secret file is missing or not readable: $SECRET_FILE"
     exit 1
 fi
+
+FTP_PASSWORD="$(tr -d '\r\n' < "$SECRET_FILE")"
+
+if [ -z "$FTP_PASSWORD" ]; then
+    echo "[ERROR] FTP password cannot be empty!"
+    exit 1
+fi
+
+echo "[INFO] FTP password loaded from secret file."
 
 # ========== Check if FTP user exists ==========
 

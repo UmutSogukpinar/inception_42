@@ -6,6 +6,16 @@ set -e
 DB_USER="${MYSQL_USER}"
 DB_NAME="${MYSQL_DATABASE}"
 
+if [ ! -f "$MYSQL_PASSWORD_FILE" ] || [ ! -r "$MYSQL_PASSWORD_FILE" ]; then
+    echo "[ERROR] $MYSQL_PASSWORD_FILE is missing or not readable!"
+    exit 1
+fi
+
+if [ ! -f "$MYSQL_ROOT_PASSWORD_FILE" ] || [ ! -r "$MYSQL_ROOT_PASSWORD_FILE" ]; then
+    echo "[ERROR] $MYSQL_ROOT_PASSWORD_FILE is missing or not readable!"
+    exit 1
+fi
+
 DB_PASSWORD="$(cat "$MYSQL_PASSWORD_FILE")"
 DB_ROOT_PASSWORD="$(cat "$MYSQL_ROOT_PASSWORD_FILE")"
 

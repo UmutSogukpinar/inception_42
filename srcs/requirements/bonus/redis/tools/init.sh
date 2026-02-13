@@ -13,19 +13,20 @@ echo "[INFO] Configuring Redis..."
 
 # ========== Load password from secret ==========
 
-if [ -f "$SECRET_FILE" ]; then
-    REDIS_PASSWORD=$(cat "$SECRET_FILE")
-    
+if [ -r "$SECRET_FILE" ] && [ -f "$SECRET_FILE" ]; then
+    REDIS_PASSWORD="$(tr -d '\r\n' < "$SECRET_FILE")"
+
     if [ -z "$REDIS_PASSWORD" ]; then
-        echo "[ERROR] Secret file is empty!"
+        echo "[ERROR] Secret file is empty: $SECRET_FILE"
         exit 1
     fi
 
-    echo "[INFO] Password found. Starting with password protection."
+    echo "[INFO] Redis password loaded from secret file."
 else
-    echo "[ERROR] No password secret file found!"
+    echo "[ERROR] Secret file is missing or not readable: $SECRET_FILE"
     exit 1
 fi
+
 
 # ================== Start Redis Server ==================
 
