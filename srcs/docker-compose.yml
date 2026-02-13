@@ -10,7 +10,7 @@ services:
 
   nginx:
     build: ./requirements/nginx
-    image: inception/nginx:inception
+    image: nginx
     container_name: nginx
     restart: always
     environment:
@@ -42,7 +42,7 @@ services:
 
   mariadb:
     build: ./requirements/mariadb
-    image: inception/mariadb:inception
+    image: mariadb
     container_name: mariadb
     restart: always
 
@@ -72,7 +72,7 @@ services:
 
   wordpress:
     build: ./requirements/wordpress
-    image: inception/wordpress:inception
+    image: wordpress
     container_name: wordpress
     restart: always
 
@@ -120,7 +120,7 @@ services:
 
   redis:
     build: ./requirements/bonus/redis
-    image: inception/redis:inception
+    image: redis
     container_name: redis
     restart: always
     secrets:
@@ -142,7 +142,7 @@ services:
 
   adminer:
     build: ./requirements/bonus/adminer
-    image: inception/adminer:inception
+    image: adminer
     container_name: adminer
     restart: always
     depends_on:
@@ -163,7 +163,7 @@ services:
 
   ftp:
     build: ./requirements/bonus/ftp
-    image: inception/ftp:inception
+    image: ftp
     container_name: ftp
     restart: always
 
@@ -172,8 +172,9 @@ services:
         condition: service_healthy
 
     ports:
-      - "21:21"
-      - "30000-30009:30000-30009"
+      - "${FTP_PORT}:21"
+      - "${FTP_PASV_PORT_RANGE}:30000-30009"
+
     environment:
       FTP_USER: ${FTP_USER}
     secrets:
@@ -196,7 +197,7 @@ services:
 
   hugo:
     build: ./requirements/bonus/hugo
-    image: inception/hugo:inception
+    image: hugo
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
     container_name: hugo
@@ -210,7 +211,7 @@ services:
 
   portainer:
     build: ./requirements/bonus/portainer
-    image: inception/portainer:inception
+    image: portainer
     container_name: portainer
     restart: always
     volumes:
