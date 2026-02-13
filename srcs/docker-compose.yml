@@ -123,6 +123,10 @@ services:
     image: redis
     container_name: redis
     restart: always
+
+    environment:
+      - SECRET_FILE=/run/secrets/redis_password
+
     secrets:
       - redis_password
     networks:
@@ -281,7 +285,7 @@ secrets:
   db_password:
     file: ../secrets/db_password.txt
   wp_admin_pass:
-    file: ../secrets/credentials.txt
+    file: ../secrets/wp_admin_password.txt
   ftp_password:
     file: ../secrets/ftp_password_bonus.txt
   redis_password:

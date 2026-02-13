@@ -6,6 +6,9 @@ set -e
 DB_USER="${MYSQL_USER}"
 DB_NAME="${MYSQL_DATABASE}"
 
+: "${MYSQL_PASSWORD_FILE:?MYSQL_PASSWORD_FILE is not set}"
+: "${MYSQL_ROOT_PASSWORD_FILE:?MYSQL_ROOT_PASSWORD_FILE is not set}"
+
 if [ ! -f "$MYSQL_PASSWORD_FILE" ] || [ ! -r "$MYSQL_PASSWORD_FILE" ]; then
     echo "[ERROR] $MYSQL_PASSWORD_FILE is missing or not readable!"
     exit 1
@@ -16,8 +19,8 @@ if [ ! -f "$MYSQL_ROOT_PASSWORD_FILE" ] || [ ! -r "$MYSQL_ROOT_PASSWORD_FILE" ];
     exit 1
 fi
 
-DB_PASSWORD="$(cat "$MYSQL_PASSWORD_FILE")"
-DB_ROOT_PASSWORD="$(cat "$MYSQL_ROOT_PASSWORD_FILE")"
+DB_PASSWORD="$(tr -d '\r\n' < "$MYSQL_PASSWORD_FILE")"
+DB_ROOT_PASSWORD="$(tr -d '\r\n' < "$MYSQL_ROOT_PASSWORD_FILE")"
 
 DATADIR="/var/lib/mysql"
 MYSQLD_ARGS="--console --datadir=${DATADIR} --user=mysql"

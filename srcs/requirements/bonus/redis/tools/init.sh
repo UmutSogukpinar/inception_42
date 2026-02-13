@@ -4,16 +4,16 @@ set -e
 
 echo "[INFO] Starting Redis..."
 
-# ========== Variables ==========
+# ========== Load Variables ==========
 
 CONF_FILE="/etc/redis/redis.conf"
-SECRET_FILE="/run/secrets/redis_password"
 
 echo "[INFO] Configuring Redis..."
 
 # ========== Load password from secret ==========
+: "${SECRET_FILE:?SECRET_FILE is not set}"
 
-if [ -r "$SECRET_FILE" ] && [ -f "$SECRET_FILE" ]; then
+if [ -f "$SECRET_FILE" ] && [ -r "$SECRET_FILE" ]; then
     REDIS_PASSWORD="$(tr -d '\r\n' < "$SECRET_FILE")"
 
     if [ -z "$REDIS_PASSWORD" ]; then
@@ -26,7 +26,6 @@ else
     echo "[ERROR] Secret file is missing or not readable: $SECRET_FILE"
     exit 1
 fi
-
 
 # ================== Start Redis Server ==================
 

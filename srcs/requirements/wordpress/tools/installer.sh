@@ -18,32 +18,41 @@ DB_HOST=$WORDPRESS_DB_HOST
 DB_NAME=$WORDPRESS_DB_NAME
 DB_USER=$WORDPRESS_DB_USER
 
-# Load Database Password
-if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
-    DB_PASSWORD=$(cat "$WORDPRESS_DB_PASSWORD_FILE")
-else
-    echo "[ERROR] Database password secret file not found!"
+# ====================== Load Database Password ======================
+: "${WORDPRESS_DB_PASSWORD_FILE:?WORDPRESS_DB_PASSWORD_FILE is not set}"
+
+if [ ! -f "$WORDPRESS_DB_PASSWORD_FILE" ] || [ ! -r "$WORDPRESS_DB_PASSWORD_FILE" ]; then
+    echo "[ERROR] Database password secret is missing or not readable: $WORDPRESS_DB_PASSWORD_FILE"
     exit 1
 fi
 
-# Load Redis Password
-REDIS_SECRET_FILE="/run/secrets/redis_password"
+DB_PASSWORD="$(tr -d '\r\n' < "$WORDPRESS_DB_PASSWORD_FILE")"
 
-if [ -f "$REDIS_SECRET_FILE" ]; then
-    REDIS_PASSWORD=$(cat "$REDIS_SECRET_FILE")
-else
-    echo "[ERROR] Redis password secret not found at $REDIS_SECRET_FILE"
-    echo "Make sure you added 'secrets: - redis_password' to wordpress service in docker-compose.yml"
+# ====================== Load Redis Password ======================
+: "${REDIS_SECRET_FILE:?REDIS_SECRET_FILE is not set}"
+
+if [ ! -f "$REDIS_SECRET_FILE" ] || [ ! -r "$REDIS_SECRET_FILE" ]; then
+    echo "[ERROR] Redis password secret is missing or not readable: $REDIS_SECRET_FILE"
+    echo "[HINT] Ensure the secret is defined under 'secrets:' in docker-compose.yml and attached to the service that runs this script."
     exit 1
 fi
 
-# Load WP Admin Credentials
-if [ -f "$WORDPRESS_ADMIN_PASSWORD_FILE" ]; then
-    WP_ADMIN_PASSWORD=$(cat "$WORDPRESS_ADMIN_PASSWORD_FILE")
-else
-    echo "[ERROR] WORDPRESS_ADMIN_PASSWORD_FILE not found!"
+REDIS_PASSWORD="$(tr -d '\r\n' < "$REDIS_SECRET_FILE")"
+
+if [ -z "$REDIS_PASSWORD" ]; then
+    echo "[ERROR] Redis password secret is empty: $REDIS_SECRET_FILE"
     exit 1
 fi
+
+#  ====================== Load WP Admin Password ======================
+: "${WORDPRESS_ADMIN_PASSWORD_FILE:?WORDPRESS_ADMIN_PASSWORD_FILE is not set}"
+
+if [ ! -f "$WORDPRESS_ADMIN_PASSWORD_FILE" ] || [ ! -r "$WORDPRESS_ADMIN_PASSWORD_FILE" ]; then
+    echo "[ERROR] Admin password secret is missing or not readable: $WORDPRESS_ADMIN_PASSWORD_FILE"
+    exit 1
+fi
+
+WP_ADMIN_PASSWORD="$(tr -d '\r\n' < "$WORDPRESS_ADMIN_PASSWORD_FILE")"
 
 # ================== Validate Required Values ====================
 

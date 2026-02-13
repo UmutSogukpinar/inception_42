@@ -3,8 +3,9 @@
 set -e
 
 # ========== Load FTP Password ==========
+: "${SECRET_FILE:?SECRET_FILE is not set}"
 
-if [ ! -r "$SECRET_FILE" ] || [ ! -f "$SECRET_FILE" ]; then
+if [ ! -f "$SECRET_FILE" ] || [ ! -r "$SECRET_FILE" ]; then
     echo "[ERROR] Secret file is missing or not readable: $SECRET_FILE"
     exit 1
 fi
@@ -17,6 +18,7 @@ if [ -z "$FTP_PASSWORD" ]; then
 fi
 
 echo "[INFO] FTP password loaded from secret file."
+
 
 # ========== Check if FTP user exists ==========
 
