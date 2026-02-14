@@ -1,4 +1,27 @@
-*This project has been created as part of the 42 curriculum by usogukpi*
+<div align="center">
+  <a href="https://github.com/umutsogukpinar/inception">
+    <img src="https://github.com/ayogun/42-project-badges/blob/main/badges/inceptionm.png" alt="Inception Logo" width="200">
+  </a>
+
+  <h1>Inception</h1>
+
+ <p>
+    <b>"Building a containerized infrastructure 
+        using Docker and Docker Compose."
+    </b>
+</p>
+
+  <p>
+    <a href="https://github.com/umutsogukpinar/inception">
+      <img src="https://img.shields.io/badge/Language-Docker%20%2F%20Shell-blue?style=for-the-badge&logo=docker" alt="Docker / Shell">
+    </a>
+    <a href="#">
+      <img src="https://img.shields.io/badge/Score-125%2F100-success?style=for-the-badge" alt="Score">
+    </a>
+  </p>
+</div>
+
+
 
 # 🐳 Inception
 
