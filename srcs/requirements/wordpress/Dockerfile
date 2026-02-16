@@ -5,6 +5,7 @@ RUN apt-get update && \
     apt-get install -y --fix-missing --no-install-recommends \
         bash curl wget ca-certificates \
         mariadb-client \
+		netcat-openbsd \
         php8.2 \
         php8.2-cli \
         php8.2-fpm \

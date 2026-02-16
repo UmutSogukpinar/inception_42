@@ -1,6 +1,6 @@
 FROM alpine:3.22
 
-ARG PORTAINER_VERSION=2.21.5
+ARG PORTAINER_VERSION=2.33.5
 ARG DOCKER_COMPOSE_VERSION=2.29.1
 
 # Install Dependencies
@@ -29,7 +29,7 @@ RUN curl -L \
 # Configurations
 WORKDIR /opt/portainer
 RUN mkdir -p /data
-EXPOSE 9443
+EXPOSE 9000
 
 # Container Entrypoint
 ENTRYPOINT ["./portainer", "--data", "/data"]
