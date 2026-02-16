@@ -5,7 +5,8 @@ RUN apk update && apk add --no-cache \
     hugo \
     git \
     shadow \
-    bash
+    bash \
+	wget
 
 # Copy Hugo initialization script into the container
 COPY content/content.sh /hugo_setup.sh
