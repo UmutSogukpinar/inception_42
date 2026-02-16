@@ -34,9 +34,10 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "curl -k -I https://localhost | grep -i nginx || exit 1"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
+      start_period: 10s
 
   # ===========================================
   #               MariaDB Service             
@@ -64,9 +65,10 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -p$(cat /run/secrets/db_root_password) || exit 1"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
+      start_period: 10s
 
   # ===========================================
   #               WordPress Service
@@ -113,9 +115,10 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "nc -zv wordpress 9000 || exit 1"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
+      start_period: 10s
 
   # ===========================================
   #               Redis Service
@@ -139,9 +142,10 @@ services:
 
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
+      start_period: 10s
 
   # ===========================================
   #               Adminer Service
@@ -158,11 +162,11 @@ services:
       - inception
 
     healthcheck:
-          test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:8080 || exit 1"]
-          interval: 30s
-          timeout: 5s
-          retries: 3
-          start_period: 10s
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:8080 || exit 1"]
+      interval: 20s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
 
   # ===========================================
   #               FTP Service
@@ -198,8 +202,8 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 21"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
       start_period: 10s
 
@@ -219,10 +223,11 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:1313/hugo/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      interval: 20s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+
 
   # ===========================================
   #               Portainer Service
@@ -241,8 +246,8 @@ services:
 
     healthcheck:
       test: ["CMD-SHELL", "curl -k -f http://localhost:9000 || exit 1"]
-      interval: 30s
-      timeout: 5s
+      interval: 20s
+      timeout: 60s
       retries: 5
       start_period: 10s
 
