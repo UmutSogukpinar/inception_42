@@ -3,14 +3,14 @@
 set -e
 
 # ========== Load FTP Password ==========
-: "${SECRET_FILE:?SECRET_FILE is not set}"
+: "${FTP_PASSWORD_FILE:?FTP_PASSWORD_FILE is not set}"
 
-if [ ! -f "$SECRET_FILE" ] || [ ! -r "$SECRET_FILE" ]; then
-    echo "[ERROR] Secret file is missing or not readable: $SECRET_FILE"
+if [ ! -f "$FTP_PASSWORD_FILE" ] || [ ! -r "$FTP_PASSWORD_FILE" ]; then
+    echo "[ERROR] Secret file is missing or not readable: $FTP_PASSWORD_FILE"
     exit 1
 fi
 
-FTP_PASSWORD="$(tr -d '\r\n' < "$SECRET_FILE")"
+FTP_PASSWORD="$(tr -d '\r\n' < "$FTP_PASSWORD_FILE")"
 
 if [ -z "$FTP_PASSWORD" ]; then
     echo "[ERROR] FTP password cannot be empty!"
