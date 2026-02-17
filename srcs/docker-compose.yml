@@ -131,7 +131,7 @@ services:
     restart: always
 
     environment:
-      - SECRET_FILE=/run/secrets/redis_password
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
 
     secrets:
       - redis_password

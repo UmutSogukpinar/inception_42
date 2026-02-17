@@ -2,16 +2,12 @@ FROM debian:bookworm-slim
 
 # Install MariaDB server and client
 RUN apt-get update && \
-    apt-get install -y --fix-missing --no-install-recommends \
+    apt-get install -y --no-install-recommends \
     mariadb-client \
     mariadb-server \
+    && mkdir -p /var/log/mysql /run/mysqld /var/lib/mysql \
+    && chown -R mysql:mysql /var/log/mysql /run/mysqld /var/lib/mysql \
     && rm -rf /var/lib/apt/lists/*
-
-# ===== Setup MariaDB =====
-
-# Create necessary directories and set permissions
-RUN mkdir -p /var/log/mysql /run/mysqld /var/lib/mysql && \
-    chown -R mysql:mysql /var/log/mysql /run/mysqld /var/lib/mysql
 
 # ===== Copy config files =====
 

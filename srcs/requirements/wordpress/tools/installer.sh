@@ -73,14 +73,6 @@ WP_ADMIN_PASSWORD="$(tr -d '\r\n' < "$WORDPRESS_ADMIN_PASSWORD_FILE")"
 echo "[INFO] All variables loaded successfully."
 echo "[INFO] Starting WordPress setup..."
 
-# ========== Runtime & Directory Setup ==========
-
-PHP_RUN_DIR="/run/php"
-
-mkdir -p "$PHP_RUN_DIR"
-chown -R www-data:www-data "$PHP_RUN_DIR"
-chown -R www-data:www-data "$WP_PATH"
-
 ## ================== Config File Setup ==================
 
 if [ ! -f "$WP_PATH/wp-config.php" ]; then
