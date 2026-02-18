@@ -6,7 +6,7 @@ RUN apk add --no-cache \
     vsftpd \
     openssl \
     netcat-openbsd \
-    lftp
+    inetutils-ftp
 
 # Create WordPress directory and vsftpd chroot directory
 RUN mkdir -p /var/www/html && mkdir -p /var/run/vsftpd/empty
