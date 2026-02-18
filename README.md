@@ -73,7 +73,7 @@ make --version
 - WordPress website: `https://usogukpi.42.fr`
 - WordPress admin panel: `https://usogukpi.42.fr/wp-admin`
 - Adminer: `https://usogukpi.42.fr/adminer`
-- Portainer: `https://usogukpi.42.fr:9443`
+- Portainer: `https://usogukpi.42.fr/portainer`
 - Hugo Static Website: `https://usogukpi.42.fr/hugo`
 
 ### 🛑 Stopping the Services

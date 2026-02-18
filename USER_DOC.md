@@ -310,7 +310,7 @@ This is a simple static site showcasing your skills or serving as a portfolio/re
 
 Portainer is a web-based Docker management interface.
 
-**URL:** `https://usogukpi.42.fr:9443`
+**URL:** `https://usogukpi.42.fr/portainer`
 
 **First Time Setup:**
 1. Visit the URL above
@@ -348,7 +348,7 @@ secrets/
 
 ```bash
 # WordPress admin credentials
-cat secrets/credentials.txt
+cat secrets/wp_admin_password.txt
 
 # Database credentials
 cat secrets/db_password.txt
@@ -544,6 +544,8 @@ docker ps -s
 | Access website | `https://usogukpi.42.fr` |
 | Admin panel | `https://usogukpi.42.fr/wp-admin` |
 | Clean everything | `make fclean` ⚠️ |
+| Clean unused Docker (images/containers/networks) | `docker system prune -a` |
+
 
 ### Bonus Services
 

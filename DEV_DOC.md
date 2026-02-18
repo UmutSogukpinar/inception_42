@@ -24,7 +24,6 @@ This document provides detailed technical information for developers working on 
    - User with sudo privileges
 
 2. **Required Software**
-
   Make sure your user has **sudo privileges** before running the commands below.  
   If not, switch to root and grant sudo permission:
   ```bash
@@ -104,48 +103,51 @@ This document provides detailed technical information for developers working on 
    ```bash
    cat > srcs/.env << EOF
 
-    # ========= General Settings =========
+	# ========= General Settings =========
 
-    USER_NAME=usogukpi
-    DATA_DIR=/home/usogukpi/data
-    DOMAIN_NAME=usogukpi.42.fr
+	USER_NAME=${USER}
+	DATA_DIR=${HOME}/data
+	DOMAIN_NAME=usogukpi.42.fr
 
-    # ========= MariaDB =========
+	# ========= MariaDB =========
 
-    DB_NAME=wordpress
-    DB_USER_NAME=db_user
+	DB_NAME=wordpress
+	DB_USER_NAME=wp_user
 
-    # ========= WordPress =========
+	# ========= WordPress =========
 
-    WORDPRESS_TITLE=Inception
-    WP_ADMIN=neyabai
-    WP_ADMIN_EMAIL=usogukpi@student.42istanbul.com.tr
+	WORDPRESS_TITLE=Inception
+	WP_ADMIN=neyabai
+	WP_ADMIN_EMAIL=usogukpi@student.42istanbul.com.tr
 
-    WORDPRESS_DB_USER=wp_user
-    WORDPRESS_DB_HOST=mariadb
+	WORDPRESS_DB_USER=wp_user
+	WORDPRESS_DB_HOST=mariadb
 
-    DB_HOST=mariadb:3306
+	DB_HOST=mariadb:3306
 
 
-    # PHP-FPM listen
-    PHP_FPM_LISTEN=9000
+	# PHP-FPM listen
+	PHP_FPM_LISTEN=9000
 
-    # ========= Nginx =========
+	# ========= Nginx =========
 
-    NGINX_PORT=443
+	NGINX_PORT=443
 
-    # ========= FTP =========
+	# ========= FTP =========
 
-    FTP_USER=ftpuser
+	FTP_USER=ftpuser
 
-    # ========= Redis =========
+	FTP_PORT=21
+	FTP_PASV_PORT_RANGE=30000-30009
 
-    REDIS_HOST=redis
-    REDIS_PORT=6379
+	# ========= Redis =========
 
-    # ========= Portainer =========
+	REDIS_HOST=redis
+	REDIS_PORT=6379
 
-    PORTAINER_PORT=9443
+	# ========== Adminer ==========
+
+	ADMINER_PORT=8080
    EOF
    ```
 
