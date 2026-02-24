@@ -1,6 +1,8 @@
 FROM alpine:3.22
 
-# ===== Install PHP and utilities =====
+ARG ADMINER_VERSION=5.4.1
+
+# ===== Install Dependencies =====
 
 RUN apk add --no-cache \
     php \
@@ -11,20 +13,20 @@ RUN apk add --no-cache \
     php-json \
     php-xml \
     php-curl \
-    wget \
+    curl \
     ca-certificates
 
-# Set working directory
-WORKDIR /var/www/html
 
 # ===== Download Adminer =====
 
-# --no-check-certificate added to avoid SSL issues on Alpine
-RUN wget --no-check-certificate -O index.php https://github.com/vrana/adminer/releases/download/v5.4.1/adminer-5.4.1.php
+RUN mkdir -p /var/www/html && \
+    curl -fL "https://github.com/vrana/adminer/releases/download/v${ADMINER_VERSION}/adminer-${ADMINER_VERSION}.php" \
+    -o /var/www/html/index.php
 
-# Expose Port
-EXPOSE 8080
+RUN adduser -D -u 1000 adminer && \
+    chown -R adminer:adminer /var/www/html
 
-# ===== Start PHP built-in server =====
+USER adminer
 
-ENTRYPOINT ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
+ENTRYPOINT ["php"]
+CMD ["-S", "0.0.0.0:8080", "-t", "/var/www/html"]
