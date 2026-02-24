@@ -11,6 +11,7 @@ CONF_FILE="/etc/redis/redis.conf"
 echo "[INFO] Configuring Redis..."
 
 # ========== Load password from secret ==========
+
 : "${REDIS_PASSWORD_FILE:?REDIS_PASSWORD_FILE is not set}"
 
 if [ -f "$REDIS_PASSWORD_FILE" ] && [ -r "$REDIS_PASSWORD_FILE" ]; then

@@ -2,9 +2,7 @@
 
 set -e
 
-if [ -z "$DOMAIN_NAME" ]; then
-    DOMAIN_NAME="localhost"
-fi
+: "${DOMAIN_NAME:?DOMAIN_NAME environment variable is required}"
 
 DIR="/var/hugo/me"
 
@@ -19,11 +17,10 @@ echo "[INFO] Creating new site..."
 mkdir -p "$DIR"
 cd "$DIR"
 
-# Create a new Hugo site with YAML configuration
 hugo new site . --force --format yaml
 
 echo "[INFO] Configuring config.yaml..."
-cat > config.yaml <<EOF
+cat > config.yaml << EOF
 baseURL: "https://${DOMAIN_NAME}/hugo/"
 languageCode: "en-us"
 title: "42 Survival Guide"
@@ -69,7 +66,6 @@ STYLE="
         margin-bottom: 3rem;
     }
 
-    /* Card Design */
     article { 
         background: var(--card-bg); 
         padding: 2rem; 
@@ -83,7 +79,6 @@ STYLE="
     a { color: var(--link); text-decoration: none; font-weight: bold; }
     a:hover { text-decoration: underline; color: #fff; }
 
-    /* List Props */
     ul.project-list { list-style: none; padding: 0; }
     ul.project-list li {
         background: var(--card-bg);

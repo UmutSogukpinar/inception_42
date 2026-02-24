@@ -1,6 +1,6 @@
 FROM alpine:3.22
 
-# Install Hugo and required system utilities
+# =========== Install Dependencies ===========
 RUN apk update && apk add --no-cache \
     hugo \
     git \
@@ -8,16 +8,9 @@ RUN apk update && apk add --no-cache \
     bash \
 	wget
 
-# Copy Hugo initialization script into the container
-COPY content/content.sh /hugo_setup.sh
+#  =========== Execute Configurations ===========
+    
+COPY content/content.sh /usr/local/bin/hugo_setup.sh
+RUN chmod +x /usr/local/bin/hugo_setup.sh
 
-# Ensure the initialization script is executable
-RUN chmod +x /hugo_setup.sh
-
-# Set the working directory
-WORKDIR /var/hugo
-
-EXPOSE 1313
-
-# Run the Hugo setup script 
-ENTRYPOINT ["/hugo_setup.sh"]
+ENTRYPOINT ["/usr/local/bin/hugo_setup.sh"]
