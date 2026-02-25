@@ -2,16 +2,11 @@
 
 set -e
 
-# ===== Check for existing SSL certificates =====
-
+# Check for existing SSL certificates 
 if [ ! -f "/etc/nginx/ssl/nginx.key" ] || [ ! -f "/etc/nginx/ssl/nginx.crt" ]; then
     echo "[INFO] Generating SSL certificate..."
 
-    # Use localhost if DOMAIN_NAME environment variable is not set
-    if [ -z "$DOMAIN_NAME" ]; then
-        echo "[ERROR] DOMAIN_NAME variable not set."
-        exit 1
-    fi
+    : "${DOMAIN_NAME:?DOMAIN_NAME variable not set}"
 
     # Generate self-signed SSL certificate
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

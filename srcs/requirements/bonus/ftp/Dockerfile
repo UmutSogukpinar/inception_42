@@ -1,5 +1,8 @@
 FROM alpine:3.22
 
+EXPOSE 21
+EXPOSE 30000-30009
+
 # ===== Install necessary packages =====
 
 RUN apk add --no-cache \
@@ -16,8 +19,5 @@ COPY conf/vsftpd.conf /etc/vsftpd.conf
 
 COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
-EXPOSE 21
-EXPOSE 30000-30009
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
