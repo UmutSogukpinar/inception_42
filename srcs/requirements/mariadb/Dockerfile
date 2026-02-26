@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # ===== Copy config files =====
 
-COPY ./conf/mariadb.conf /etc/mysql/mariadb.conf.d/
+COPY ./conf/mariadb.cnf /etc/mysql/mariadb.conf.d/
 
 COPY ./tools/installer.sh /usr/local/bin/mariadb_installer.sh
 

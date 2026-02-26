@@ -31,7 +31,7 @@ else
     
     # ========== Add user ==========
 
-    adduser -D -h /var/www/html "$FTP_USER"
+    adduser -D -h /var/www/html -u 33 "$FTP_USER"
     
     # Set password
     echo "$FTP_USER:$FTP_PASSWORD" | chpasswd
