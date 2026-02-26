@@ -21,4 +21,6 @@ RUN curl -fSL \
 
 RUN mkdir -p /opt/portainer/data
 
+# ======== Start Portainer ========
+
 ENTRYPOINT ["/opt/portainer/portainer"]

@@ -28,5 +28,7 @@ RUN adduser -D -u 1000 adminer && \
 
 USER adminer
 
+#  ============= Start Adminer =============
+
 ENTRYPOINT ["php"]
 CMD ["-S", "0.0.0.0:8080", "-t", "/var/www/html"]

@@ -3,6 +3,7 @@
 set -e
 
 # ========== Load FTP Password ==========
+
 : "${FTP_PASSWORD_FILE:?FTP_PASSWORD_FILE is not set}"
 
 if [ ! -f "$FTP_PASSWORD_FILE" ] || [ ! -r "$FTP_PASSWORD_FILE" ]; then
@@ -32,14 +33,8 @@ else
     # ========== Add user ==========
 
     adduser -D -h /var/www/html -u 33 "$FTP_USER"
-    
-    # Set password
     echo "$FTP_USER:$FTP_PASSWORD" | chpasswd
-    
-    # Add user to vsftpd whitelist
     echo "$FTP_USER" >> /etc/vsftpd.userlist
-    
-    # Fix ownership to allow write permissions
     chown -R "$FTP_USER:$FTP_USER" /var/www/html
 fi
 

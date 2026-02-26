@@ -19,6 +19,7 @@ DB_NAME=$WORDPRESS_DB_NAME
 DB_USER=$WORDPRESS_DB_USER
 
 # ====================== Load Database Password ======================
+
 : "${WORDPRESS_DB_PASSWORD_FILE:?WORDPRESS_DB_PASSWORD_FILE is not set}"
 
 if [ ! -f "$WORDPRESS_DB_PASSWORD_FILE" ] || [ ! -r "$WORDPRESS_DB_PASSWORD_FILE" ]; then
@@ -29,6 +30,7 @@ fi
 DB_PASSWORD="$(tr -d '\r\n' < "$WORDPRESS_DB_PASSWORD_FILE")"
 
 # ====================== Load Redis Password ======================
+
 : "${REDIS_SECRET_FILE:?REDIS_SECRET_FILE is not set}"
 
 if [ ! -f "$REDIS_SECRET_FILE" ] || [ ! -r "$REDIS_SECRET_FILE" ]; then
@@ -45,6 +47,7 @@ if [ -z "$REDIS_PASSWORD" ]; then
 fi
 
 #  ====================== Load WP Admin Password ======================
+
 : "${WORDPRESS_ADMIN_PASSWORD_FILE:?WORDPRESS_ADMIN_PASSWORD_FILE is not set}"
 
 if [ ! -f "$WORDPRESS_ADMIN_PASSWORD_FILE" ] || [ ! -r "$WORDPRESS_ADMIN_PASSWORD_FILE" ]; then
@@ -102,23 +105,17 @@ WP_REDIS_DATABASE=0
 
 echo "[INFO] Configuring Redis in wp-config.php..."
 
-# Set Host (Container name)
 wp config set WP_REDIS_HOST "$WP_REDIS_HOST" --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
-# Set Port
 wp config set WP_REDIS_PORT "$WP_REDIS_PORT" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
-# Set Password
 wp config set WP_REDIS_PASSWORD "$REDIS_PASSWORD" --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
-# Enable Cache
 wp config set WP_CACHE "$WP_CACHE" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
-# Set Database Index
 wp config set WP_REDIS_DATABASE "$WP_REDIS_DATABASE" --raw --allow-root --type=constant > "$BLACK_HOLE" 2>&1
 
 # ========== Wait for MariaDB ==========
-
 
 echo "[INFO] Waiting for MariaDB connection..."
 until wp db check --path="$WP_PATH" --allow-root > "$BLACK_HOLE" 2>&1; do
@@ -129,7 +126,6 @@ done
 echo "[SUCCESS] Connected to MariaDB."
 
 # ================== WordPress Installation Check ==================
-
 
 if ! wp core is-installed --path="$WP_PATH" --allow-root; then
     echo "[INFO] WordPress tables are missing. Installing..."
